@@ -56,7 +56,7 @@ Após a instalação das dependências, você pode iniciar o projeto:
 
 1.  **Inicie o servidor de desenvolvimento Metro Bundler:**
     ```bash
-    npm expo start
+    npx expo start
     ```
 
 2.  **Execute o aplicativo:**
