@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, SectionList, ActivityIndicator, Modal, Button, Alert, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, SectionList, ActivityIndicator, Modal, Alert, TouchableOpacity, TextInput } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { format, parseISO, isToday, isYesterday, set } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -164,9 +165,18 @@ export default function HistoricoScreen() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={handleCloseModal}
+                accessibilityLabel="Fechar"
+                accessibilityRole="button"
+              >
+                <Ionicons name="close" size={24} color={colors.text} />
+              </TouchableOpacity>
+
               <Text style={styles.modalTitle}>Editar Registro</Text>
               <Text style={styles.modalMedication}>{selectedRecord.agendamento.medicamento.nome}</Text>
-              
+
               <Text style={styles.inputLabel}>Horário do Registro</Text>
               <View style={styles.timeInputContainer}>
                 <TextInput
@@ -189,20 +199,20 @@ export default function HistoricoScreen() {
                     placeholderTextColor={colors.textSecondary}
                 />
               </View>
-              
-              <View style={styles.modalButtonContainer}>
-                <View style={{ backgroundColor: colors.primary, borderRadius: 10, overflow: 'hidden', padding:5}}>
-                  <Button title="Usei" onPress={() => handleUpdateRecord(true)} color={colors.textOnPrimary} />
-                </View>
 
-                <View style={{ backgroundColor: colors.error, borderRadius: 10, overflow: 'hidden', padding:5 }}>
-                  <Button title="Não Usei" onPress={() => handleUpdateRecord(false)} color={colors.textOnPrimary} />
-                </View>
-              </View>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => handleUpdateRecord(true)}
+              >
+                <Text style={styles.modalButtonText}>USEI</Text>
+              </TouchableOpacity>
 
-              <View style={{  backgroundColor: colors.textSecondary, borderRadius: 10, overflow: 'hidden', padding:5 }}>
-                <Button title="Cancelar" onPress={handleCloseModal} color={colors.textOnPrimary} />
-              </View>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonError]}
+                onPress={() => handleUpdateRecord(false)}
+              >
+                <Text style={styles.modalButtonText}>NÃO USEI</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Modal>

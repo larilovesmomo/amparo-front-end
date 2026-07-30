@@ -61,6 +61,10 @@ export const makeStyles = (colors: ColorPalette, fontScale: number, highContrast
     marginTop: 20,
     alignItems: 'center',
   },
+  deleteButton: {
+    backgroundColor: '#F44336',
+    marginTop: 20,
+  },
   buttonText: {
     color: colors.textOnPrimary,
     fontSize: 16 * fontScale,
