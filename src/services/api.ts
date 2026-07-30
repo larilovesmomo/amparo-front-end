@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { router } from 'expo-router'; // ou sua biblioteca de navegação
+import { clearAuthStorage } from './authStorage';
 
 // Esta variável impede loops infinitos de refresh
 let isRefreshing = false;
@@ -18,6 +18,12 @@ const api = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
 });
 
+let onUnauthorized: (() => void) | null = null;
+
+export function setUnauthorizedCallback(callback: () => void) {
+  onUnauthorized = callback;
+}
+
 // O interceptor de REQUISIÇÃO continua o mesmo
 api.interceptors.request.use(
   async (config) => {
@@ -32,6 +38,7 @@ api.interceptors.request.use(
 
 // NOVO: Adicionamos um interceptor de RESPOSTA para lidar com erros 401
 api.interceptors.response.use(
+  
   // Se a resposta for sucesso, não faz nada
   (response) => response,
   
@@ -40,7 +47,7 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // Se o erro for 401 e não for uma tentativa de refresh de token
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url.includes('/api/token/')) {
       if (!isRefreshing) {
         isRefreshing = true;
         originalRequest._retry = true; // Marca que já tentamos refazer esta requisição
@@ -48,8 +55,13 @@ api.interceptors.response.use(
         try {
           const refreshToken = await SecureStore.getItemAsync('refreshToken');
           if (!refreshToken) {
+              failedRequestsQueue = [];
+              if (onUnauthorized) {
+              onUnauthorized();
+              console.log("Sem refresh token disponível. Limpando sessão.");
+            }
+
             // Se não há refresh token, desloga o usuário
-            // (Aqui você chamaria sua função global de signOut se a tivesse num contexto)
             return Promise.reject(error);
           }
 
@@ -70,11 +82,16 @@ api.interceptors.response.use(
           return api(originalRequest);
 
         } catch (refreshError) {
+          if (onUnauthorized) {
+          onUnauthorized(); 
           // Se o refresh falhar, desloga o usuário
+          await clearAuthStorage();
           failedRequestsQueue.forEach(promise => promise.reject(refreshError));
           failedRequestsQueue = [];
           // (Aqui você chamaria sua função global de signOut)
-          console.log("Refresh token inválido, deslogando.");
+          console.log("Refresh token inválido, sessão removida.");
+        }
+
           return Promise.reject(refreshError);
         } finally {
           isRefreshing = false;

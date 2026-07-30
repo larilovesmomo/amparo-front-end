@@ -1,15 +1,16 @@
 import React, { createContext, useState, useEffect, useContext, useMemo, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import api from '../services/api'; 
-import * as Notifications from 'expo-notifications';
+import api, { setUnauthorizedCallback } from '../services/api';
 import { Platform } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { AgendamentoType } from '../pages/home/HomeScreen'; 
-import { scheduleReminder } from '../services/notificacao'; 
+import { clearAuthStorage } from '../services/authStorage';
 import { differenceInMinutes, isToday, parse, parseISO, set } from 'date-fns';
+import { Alert } from 'react-native';
 
 type AuthContextType = {
   signIn: (username: string, password: string) => Promise<void>;
-  signOut: () => void;
+  signOut: (automatic?: boolean) => Promise<void>;
   userToken: string | null;
   isLoading: boolean;
   checkAndRegisterDoses: () => Promise<void>;
@@ -30,6 +31,23 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userToken, setUserToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+const signOut = async (automatic = false): Promise<void> => {  
+  try {
+    await clearAuthStorage();
+    setUserToken(null);
+
+    if (automatic) {
+      Alert.alert(
+        "Sessão expirada",
+        "Faça login novamente para continuar."
+      );
+    }
+
+  } catch (error) {
+    console.error("Erro ao fazer logout:", error);
+  }  
+}
 
   const checkAndRegisterDoses = async () => {
     console.log("4. checkAndRegisterDoses: DENTRO da função, iniciando chamadas API...");
@@ -69,6 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     }catch (error) {
       console.error("Erro ao verificar doses não tomadas:", error)
+      throw error;
     }
   }
 
@@ -79,6 +98,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const token = await SecureStore.getItemAsync('accessToken');
         setUserToken(token);
+        console.log(token);
         console.log("2. bootstrapAsync: Token encontrado no SecureStore:", token ? `Sim (tamanho: ${token.length})` : 'Não (null)');
 
         if (token) {
@@ -86,13 +106,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           await checkAndRegisterDoses(); 
           console.log("5. bootstrapAsync: Verificação de doses CONCLUÍDA."); 
         } else {
-          console.log("3. bootstrapAsync: Token NÃO existe, PULEI a verificação de doses.");
+          console.log("3. bootstrapAsync: Token NÃO existe");
+          setUserToken(null);
         }
       } catch (e) {
         console.error('ERRO CRÍTICO no bootstrapAsync:', e);
-        setUserToken(null);
-        await SecureStore.deleteItemAsync('accessToken');
-        await SecureStore.deleteItemAsync('refreshToken');
+        await signOut();
       } finally {
         console.log("6. bootstrapAsync: Finalizando, setIsLoading(false).");
         setIsLoading(false);
@@ -145,14 +164,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUserToken(access);
         await checkAndRegisterDoses();
       },
-      signOut: async () => {
-        await SecureStore.deleteItemAsync('accessToken');
-        await SecureStore.deleteItemAsync('refreshToken');
-        setUserToken(null);
-      },
+      signOut,
       checkAndRegisterDoses,
     }),
-    [isLoading, userToken, checkAndRegisterDoses]
+    [isLoading, userToken, signOut, checkAndRegisterDoses]
   );
 
   return (
