@@ -5,6 +5,7 @@ import { addHours, format, set, parse } from 'date-fns';
 import { makeStyles } from './style';
 import axios from 'axios'
 import * as SecureStore from 'expo-secure-store'
+import api from '../../services/api';
 import { scheduleReminder, limparAlarmesAntigos } from '../../services/notificacao';
 import { AgendamentoType} from '../home/HomeScreen';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -305,6 +306,29 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
     }
   };
 
+  const handleDelete = () => {
+    Alert.alert(
+      "Excluir Tratamento",
+      "Isso irá apagar este medicamento e todos os seus lembretes permanentemente. Deseja continuar?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await limparAlarmesAntigos(initialData.nome);
+              await api.delete(`/api/medicamentos/${initialData.id}/`);
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert("Erro", "Não foi possível excluir o tratamento.");
+            }
+          }
+        },
+      ]
+    );
+  };
+
   return (
     <KeyboardAvoidingView 
       style={styles.wrapper} 
@@ -460,6 +484,11 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
         <TouchableOpacity style={styles.button} onPress={handleSave} disabled={loading}>
           {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{isEditing ? 'ATUALIZAR' : 'SALVAR'}</Text>}
         </TouchableOpacity>
+        {isEditing && (
+          <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={handleDelete} disabled={loading}>
+            <Text style={styles.buttonText}>EXCLUIR</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
 
       <BottomNavigationBar activeTab="add" />
