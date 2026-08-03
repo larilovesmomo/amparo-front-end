@@ -98,7 +98,6 @@ const signOut = async (automatic = false): Promise<void> => {
       try {
         const token = await SecureStore.getItemAsync('accessToken');
         setUserToken(token);
-        console.log(token);
         console.log("2. bootstrapAsync: Token encontrado no SecureStore:", token ? `Sim (tamanho: ${token.length})` : 'Não (null)');
 
         if (token) {
