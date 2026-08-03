@@ -89,6 +89,10 @@ export const makeStyles = (colors: ColorPalette, fontScale: number, highContrast
     marginBottom: 8,
     marginTop: 4,
   },
+  timePickerText: {
+    fontSize: 14 * fontScale,
+    color: colors.text,
+  },
   sectionDividerText: {
     fontSize: 16 * fontScale,
     fontWeight: 'bold',
@@ -112,5 +116,17 @@ export const makeStyles = (colors: ColorPalette, fontScale: number, highContrast
   estoqueAviso: {
     backgroundColor: highContrast ? '#332200' : '#fff3cd',
     borderColor: highContrast ? '#443300' : '#ffeeba',
+  },
+  estoqueAjudaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: -12,
+    marginBottom: 12,
+  },
+  estoqueAjudaText: {
+    flex: 1,
+    fontSize: 12 * fontScale,
+    color: colors.textSecondary,
+    marginLeft: 6,
   }
 });
