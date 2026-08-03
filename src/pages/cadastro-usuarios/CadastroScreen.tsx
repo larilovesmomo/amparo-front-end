@@ -113,6 +113,14 @@ export default function CadastroScreen() {
       >
        
         <View style={styles.container}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+            accessibilityLabel="Voltar"
+            accessibilityRole="button"
+          >
+            <Ionicons name="arrow-back" size={28} color={colors.textOnPrimary} />
+          </TouchableOpacity>
           <Image
             source={LogoAmparo}
             style={styles.logo}

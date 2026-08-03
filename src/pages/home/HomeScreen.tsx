@@ -176,16 +176,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     return Object.values(grupos)
       .map(grupo => {
         const horariosOrdenados = grupo.horarios.sort();
-        let proximoHorario: string | null = null;
+        const horariosFuturos = isSameDay(dataSelecionadaObj, hoje)
+          ? horariosOrdenados.filter(h => isAfter(parse(h, 'HH:mm:ss', new Date()), agora))
+          : horariosOrdenados;
 
-        if (isSameDay(dataSelecionadaObj, hoje)) {
-          proximoHorario =
-            horariosOrdenados.find(h => isAfter(parse(h, 'HH:mm:ss', new Date()), agora)) || null;
-        } else if (isAfter(dataSelecionadaObj, hoje)) {
-          proximoHorario = horariosOrdenados[0];
-        }
-
-        const outrosHorarios = horariosOrdenados.filter(h => h !== proximoHorario);
+        const proximoHorario = horariosFuturos[0] ?? null;
+        const outrosHorarios = horariosFuturos.slice(1);
         const estaraFinalizado = grupo.data_fim
           ? isAfter(dataSelecionadaObj, parseISO(grupo.data_fim))
           : false;
@@ -260,6 +256,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         key={grupo.id}
         nomeMedicamento={grupo.nome}
         dosagem={grupo.dosagem_valor + ' ' + grupo.dosagem_unidade}
+        estoqueAtual={grupo.estoque_atual}
         proximoHorario={grupo.proximoHorario}
         outrosHorarios={grupo.outrosHorarios}
         estaraFinalizado={grupo.estaraFinalizado}

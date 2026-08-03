@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import RNPickerSelect from 'react-native-picker-select';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { addHours, format, set, parse } from 'date-fns';
 import { makeStyles } from './style';
 import axios from 'axios'
 import * as SecureStore from 'expo-secure-store'
+import api from '../../services/api';
 import { scheduleReminder, limparAlarmesAntigos } from '../../services/notificacao';
 import { AgendamentoType} from '../home/HomeScreen';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../App'; 
-import { useRoute } from '@react-navigation/native';
+import { useRoute, usePreventRemove } from '@react-navigation/native';
 import { 
   View, 
   Text, 
@@ -50,6 +51,20 @@ type MedicamentoFormData = {
 
 type CadastroScreenProps = NativeStackScreenProps<RootStackParamList, 'CadastroMedicamento'>;
 
+const ESTOQUE_AJUDA_POR_UNIDADE: Record<string, string> = {
+  mg: 'Informe a quantidade de comprimidos disponíveis.',
+  g: 'Informe a quantidade de comprimidos ou cápsulas disponíveis.',
+  'comprimido(s)': 'Informe a quantidade de comprimidos disponíveis.',
+  'cápsula(s)': 'Informe a quantidade de cápsulas disponíveis.',
+  ml: 'Informe a quantidade de mL disponíveis.',
+  gotas: 'Informe a quantidade de gotas disponíveis.',
+};
+
+const obterAjudaEstoque = (unidade?: string | null): string | null => {
+  if (!unidade) return null;
+  return ESTOQUE_AJUDA_POR_UNIDADE[unidade] ?? null;
+};
+
 
 export default function CadastrarMedicamento({ navigation }: CadastroScreenProps) {
   
@@ -75,7 +90,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
     }
   }), [styles, colors.text]);
 
-  const [formData, setFormData] = useState<MedicamentoFormData>({
+  const initialValues: MedicamentoFormData = {
     nome: initialData?.nome || '',
     
     horario_inicio: initialData?.horario_inicio 
@@ -95,7 +110,17 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
     observacao: initialData?.observacao || '',
     estoque_atual: initialData?.estoque_atual ? String(parseFloat(initialData.estoque_atual)) : '',
     aviso_estoque_minimo: initialData?.aviso_estoque_minimo ? String(initialData.aviso_estoque_minimo) : '',
-  });
+  };
+
+  const [formData, setFormData] = useState<MedicamentoFormData>(initialValues);
+  const [savedFormData, setSavedFormData] = useState<MedicamentoFormData>(initialValues);
+
+  const hasChanges = useMemo(() => {
+    if (!isEditing) return false;
+    return (Object.keys(savedFormData) as (keyof MedicamentoFormData)[]).some(
+      key => String(savedFormData[key]) !== String(formData[key]),
+    );
+  }, [isEditing, formData, savedFormData]);
 
   const handleInputChange = (field: keyof MedicamentoFormData, value: any) => {
     setFormData(prevState => ({ ...prevState, [field]: value }));
@@ -149,6 +174,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
   };
 
   const infoEstoque = estimativaEstoque();
+  const estoqueAjuda = obterAjudaEstoque(formData.dosagem_unidade);
 
   const confirmIOSTime = () => {
     setShowStartTimePicker(false);
@@ -156,7 +182,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
   }
   
   // Validações do Formulário
-  const handleSave = async () => {
+  const handleSave = async (onSuccess?: () => void) => {
     const intervaloNum = parseInt(formData.intervalo, 10);
     const duracaoNum = formData.duracao_valor ? parseInt(formData.duracao_valor, 10) : null;
 
@@ -202,7 +228,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
     }
 
     if (horarios.length === 0) {
-        Alert.alert('Atenção', 'Nenhum horário válido foi gerado. Verifique o horário de início, fim e o intervalo.');
+        Alert.alert('Atenção', 'Nenhum horário válido foi gerado. Verifique o horário de primeira e última dose do dia ou o intervalo.');
         setLoading(false);
         return;
     }
@@ -255,10 +281,12 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
         }
       }
 
+      setSavedFormData({ ...formData });
+
       Alert.alert(
         'Sucesso!', 
         'Medicamento e agendamento cadastrados.',
-        [{ text: 'OK', onPress: () => navigation.goBack() }] 
+        [{ text: 'OK', onPress: () => (onSuccess ? onSuccess() : navigation.goBack()) }] 
       );
 
     } catch (error) {
@@ -305,6 +333,48 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
     }
   };
 
+  usePreventRemove(isEditing && hasChanges, ({ data }) => {
+    Alert.alert(
+      'Alterações não salvas',
+      'Você possui alterações não salvas. Deseja salvar antes de sair?',
+      [
+        {
+          text: 'Salvar alterações',
+          onPress: () => handleSave(() => navigation.dispatch(data.action)),
+        },
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sair sem salvar',
+          style: 'destructive',
+          onPress: () => navigation.dispatch(data.action),
+        },
+      ],
+    );
+  });
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Excluir Tratamento",
+      "Isso irá apagar este medicamento e todos os seus lembretes permanentemente. Deseja continuar?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await limparAlarmesAntigos(initialData.nome);
+              await api.delete(`/api/medicamentos/${initialData.id}/`);
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert("Erro", "Não foi possível excluir o tratamento.");
+            }
+          }
+        },
+      ]
+    );
+  };
+
   return (
     <KeyboardAvoidingView 
       style={styles.wrapper} 
@@ -328,14 +398,14 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
         
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', }}>
             <TouchableOpacity onPress={() => setShowStartTimePicker(true)} style={[styles.input, { flex: 1, marginRight: 10 }]}>
-                <Text style={{ color: formData.horario_inicio ? colors.text : colors.textSecondary }}> 
-                  {formData.horario_inicio ? `Início: ${format(formData.horario_inicio, 'HH:mm')}` : 'Início'}
+                <Text style={[styles.timePickerText, { color: formData.horario_inicio ? colors.text : colors.textSecondary }]}> 
+                  {formData.horario_inicio ? `Primeira dose do dia: ${format(formData.horario_inicio, 'HH:mm')}` : 'Primeira dose do dia'}
                 </Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setShowEndTimePicker(true)} style={[styles.input, { flex: 1 }]}>
-                <Text style={{ color: formData.horario_fim ? colors.text : colors.textSecondary }}>
-                    {formData.horario_fim ? `Fim: ${format(formData.horario_fim, 'HH:mm')}` : 'Fim (Opcional)'}
+                <Text style={[styles.timePickerText, { color: formData.horario_fim ? colors.text : colors.textSecondary }]}>
+                    {formData.horario_fim ? `Última dose do dia: ${format(formData.horario_fim, 'HH:mm')}` : 'Última dose do dia'}
                 </Text>
             </TouchableOpacity>
         </View>
@@ -441,6 +511,13 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
           />
         </View>
 
+        {estoqueAjuda && (
+          <View style={styles.estoqueAjudaContainer}>
+            <AntDesign name="info" size={14} color={colors.textSecondary} />
+            <Text style={styles.estoqueAjudaText}>{estoqueAjuda}</Text>
+          </View>
+        )}
+
         {infoEstoque && (
           <View style={[styles.estoqueInfoBox, infoEstoque.status === 'aviso' ? styles.estoqueAviso : styles.estoqueOk]}>
             <Text style={{ color: infoEstoque.status === 'aviso' ? '#856404' : '#155724', fontWeight: 'bold' }}>
@@ -457,9 +534,14 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
           style={styles.input}
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleSave} disabled={loading}>
+        <TouchableOpacity style={styles.button} onPress={() => handleSave()} disabled={loading}>
           {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{isEditing ? 'ATUALIZAR' : 'SALVAR'}</Text>}
         </TouchableOpacity>
+        {isEditing && (
+          <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={handleDelete} disabled={loading}>
+            <Text style={styles.buttonText}>EXCLUIR</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
 
       <BottomNavigationBar activeTab="add" />

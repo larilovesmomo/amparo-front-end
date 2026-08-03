@@ -8,15 +8,24 @@ import { useAccessibility } from '../contexts/AccessibilityContext';
 type MedicacaoGroupCardProps = {
   nomeMedicamento: string;
   dosagem: string;
+  estoqueAtual?: string | null;
   proximoHorario: string | null;
   outrosHorarios: string[];
   estaraFinalizado: boolean;
   dataFim: string | null;
 };
 
+const formatEstoque = (value?: string | null): string | null => {
+  if (value === null || value === undefined || value === '') return null;
+  const num = Number(value);
+  if (Number.isNaN(num)) return value;
+  return String(parseFloat(num.toFixed(2)));
+};
+
 const MedicacaoGroupCard: React.FC<MedicacaoGroupCardProps> = ({
   nomeMedicamento,
   dosagem,
+  estoqueAtual,
   proximoHorario,
   outrosHorarios,
   estaraFinalizado,
@@ -24,6 +33,7 @@ const MedicacaoGroupCard: React.FC<MedicacaoGroupCardProps> = ({
 }) => {
   const { colors, fontScale } = useAccessibility();
   const styles = useMemo(() => makeStyles(colors, fontScale), [colors, fontScale]);
+  const estoqueFormatado = formatEstoque(estoqueAtual);
 
   return (
     <View style={[styles.card, estaraFinalizado && styles.cardFinished]}>
@@ -47,6 +57,20 @@ const MedicacaoGroupCard: React.FC<MedicacaoGroupCardProps> = ({
         </View>
       ) : (
         <>
+          {estoqueFormatado !== null && (
+            <View style={[styles.row, { marginTop: 8 }]}>
+              <MaterialCommunityIcons
+                name="package-variant-closed"
+                size={16}
+                color={colors.cardBlueSubtext}
+                style={styles.icon}
+              />
+              <Text style={styles.stockText}>
+                Estoque atual: <Text style={styles.stockValueText}>{estoqueFormatado}</Text>
+              </Text>
+            </View>
+          )}
+
           {proximoHorario && (
             <View style={[styles.row, { marginTop: 8 }]}>
               <MaterialCommunityIcons
@@ -128,6 +152,14 @@ const makeStyles = (colors: any, fontScale: number) =>
     detailsText: {
       color: colors.cardBlueSubtext,
       fontSize: 14 * fontScale,
+    },
+    stockText: {
+      color: colors.cardBlueSubtext,
+      fontSize: 13 * fontScale,
+      fontStyle: 'italic',
+    },
+    stockValueText: {
+      fontWeight: 'bold',
     },
     timeText: {
       color: colors.cardBlueText,

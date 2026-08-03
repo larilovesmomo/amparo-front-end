@@ -119,4 +119,11 @@ export const makeStyles = (colors: ColorPalette, fontScale: number) => StyleShee
       fontSize: 18 * fontScale,
       fontWeight: 'bold',
     },
+    backButton: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      padding: 10,
+      zIndex: 10,
+    },
 });
