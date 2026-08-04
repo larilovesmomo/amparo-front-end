@@ -460,7 +460,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
                       onPress={() => { setShowStartTimePicker(false); setShowEndTimePicker(false); }}
                     >
                       <Text style={styles.modalButtonText}>Confirmar</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> 
                   </View>
                 </TouchableWithoutFeedback>
               </View>
