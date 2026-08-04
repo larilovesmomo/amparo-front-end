@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lari.amparo"
+      "bundleIdentifier": "com.amparo.app",
+      "infoPlist": {
+    "NSUserNotificationsUsageDescription": "O Amparo utiliza notificações para lembrar o usuário dos horários de seus medicamentos."
+      }
     },
     "android": {
       "adaptiveIcon": {
