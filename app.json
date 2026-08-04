@@ -20,7 +20,6 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#5C9EDC"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.amparo.app"
     },
     "web": {
