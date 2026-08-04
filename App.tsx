@@ -3,6 +3,7 @@ import 'react-native-gesture-handler';
 import React, {useState, useEffect, useRef} from 'react';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { AccessibilityProvider } from './src/contexts/AccessibilityContext';
 import * as Notifications from 'expo-notifications';
@@ -91,9 +92,11 @@ const AppNavigator = () => {
 export default function App() {
   return (
     <AccessibilityProvider>
-      <AuthProvider>
-        <AppNavigator />
-      </AuthProvider>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <AppNavigator />
+        </AuthProvider>
+      </SafeAreaProvider>
     </AccessibilityProvider>
   );
 }
