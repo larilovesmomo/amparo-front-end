@@ -27,6 +27,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [showPassword, setShowPassword] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [rememberMe, setRememberMe] = React.useState(false);
 
@@ -86,14 +87,16 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             value={password}
             onChangeText={setPassword}
             keyboardType="number-pad"
-            secureTextEntry={true} 
+            secureTextEntry={!showPassword}
             maxLength={4}
           />
-          <Entypo
-            name="eye"
-            size={24}
-            color={colors.text}
-          />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Entypo
+              name={showPassword ? "eye-with-line" : "eye"}
+              size={24}
+              color={colors.text}
+            />
+          </TouchableOpacity>
         </View>
         <View style={style.rowBetween}>
           <TouchableOpacity

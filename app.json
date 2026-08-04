@@ -3,28 +3,50 @@
     "name": "Amparo",
     "slug": "Amparo",
     "version": "1.0.0",
+    "icon": "./assets/amparoIcon.png",
     "orientation": "portrait",
     "backgroundColor": "#5C9EDC",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.amparo.app",
+      "infoPlist": {
+        "NSUserNotificationsUsageDescription": "O Amparo utiliza notificações para lembrar o usuário dos horários de seus medicamentos."
+      }
     },
+
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/amparoIcon.png",
         "backgroundColor": "#5C9EDC"
       },
-      "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.Amparo"
+      "package": "com.amparo.app"
     },
+
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/amparoIcon.png"
     },
+
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#5C9EDC",
+          "image": "./assets/amparoIcon.png",
+          "imageWidth": 200
+        }
+      ],
       "expo-secure-store",
       "expo-web-browser",
       "expo-notifications"
-    ]
+    ],
+
+    "extra": {
+      "eas": {
+        "projectId": "703db930-8fce-4cbf-8ac4-bef0ca546ade"
+      }
+    }
   }
 }

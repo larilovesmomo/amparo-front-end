@@ -1,4 +1,4 @@
-package com.anonymous.Amparo
+package com.amparo.app
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

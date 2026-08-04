@@ -127,12 +127,24 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
   };
 
   const onChangeStartTime = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowStartTimePicker(Platform.OS === 'ios');
+    if (Platform.OS === 'android') {
+      setShowStartTimePicker(false);
+      if (event.type === 'set' && selectedDate) {
+        handleInputChange('horario_inicio', selectedDate);
+      }
+      return;
+    }
     if (selectedDate) handleInputChange('horario_inicio', selectedDate);
   };
-  
+
   const onChangeEndTime = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowEndTimePicker(Platform.OS === 'ios');
+    if (Platform.OS === 'android') {
+      setShowEndTimePicker(false);
+      if (event.type === 'set' && selectedDate) {
+        handleInputChange('horario_fim', selectedDate);
+      }
+      return;
+    }
     if (selectedDate) handleInputChange('horario_fim', selectedDate);
   };
 
@@ -410,6 +422,25 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
             </TouchableOpacity>
         </View>
 
+        {Platform.OS === 'android' && showStartTimePicker && (
+          <DateTimePicker
+            value={formData.horario_inicio}
+            mode="time"
+            is24Hour={true}
+            display="default"
+            onChange={onChangeStartTime}
+          />
+        )}
+        {Platform.OS === 'android' && showEndTimePicker && (
+          <DateTimePicker
+            value={formData.horario_fim || new Date()}
+            mode="time"
+            is24Hour={true}
+            display="default"
+            onChange={onChangeEndTime}
+          />
+        )}
+
         {Platform.OS === 'ios' && (showStartTimePicker || showEndTimePicker) && (
           <Modal transparent={true} animationType="slide" visible={true}>
             <TouchableWithoutFeedback onPress={() => { setShowStartTimePicker(false); setShowEndTimePicker(false); }}>
@@ -429,7 +460,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
                       onPress={() => { setShowStartTimePicker(false); setShowEndTimePicker(false); }}
                     >
                       <Text style={styles.modalButtonText}>Confirmar</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> 
                   </View>
                 </TouchableWithoutFeedback>
               </View>
