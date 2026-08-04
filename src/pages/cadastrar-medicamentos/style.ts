@@ -72,12 +72,11 @@ export const makeStyles = (colors: ColorPalette, fontScale: number, highContrast
   },
   dosagemContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
   },
   dosagemInput: {
     flex: 1,
-    marginRight: 20,
+    marginRight: 10,
   },
   dosagemUnidadeInput: {
     flex: 1,

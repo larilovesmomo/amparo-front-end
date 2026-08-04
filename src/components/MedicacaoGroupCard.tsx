@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -13,6 +13,7 @@ type MedicacaoGroupCardProps = {
   outrosHorarios: string[];
   estaraFinalizado: boolean;
   dataFim: string | null;
+  onPress?: () => void;
 };
 
 const formatEstoque = (value?: string | null): string | null => {
@@ -30,13 +31,22 @@ const MedicacaoGroupCard: React.FC<MedicacaoGroupCardProps> = ({
   outrosHorarios,
   estaraFinalizado,
   dataFim,
+  onPress,
 }) => {
   const { colors, fontScale } = useAccessibility();
   const styles = useMemo(() => makeStyles(colors, fontScale), [colors, fontScale]);
   const estoqueFormatado = formatEstoque(estoqueAtual);
 
   return (
-    <View style={[styles.card, estaraFinalizado && styles.cardFinished]}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.card,
+        estaraFinalizado && styles.cardFinished,
+        pressed && styles.cardPressed,
+      ]}
+    >
       <View style={styles.row}>
         <Text style={[styles.medicationText, estaraFinalizado && styles.textFinished]}>
           {nomeMedicamento}
@@ -104,7 +114,7 @@ const MedicacaoGroupCard: React.FC<MedicacaoGroupCardProps> = ({
           )}
         </>
       )}
-    </View>
+    </Pressable>
   );
 };
 
@@ -124,6 +134,9 @@ const makeStyles = (colors: any, fontScale: number) =>
     },
     cardFinished: {
       backgroundColor: colors.border,
+    },
+    cardPressed: {
+      opacity: 0.7,
     },
     textFinished: {
       color: '#616161',
