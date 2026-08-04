@@ -261,6 +261,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         outrosHorarios={grupo.outrosHorarios}
         estaraFinalizado={grupo.estaraFinalizado}
         dataFim={grupo.dataFim}
+        onPress={() => navigation.navigate('Gerenciamento')}
       />
     ));
   };
