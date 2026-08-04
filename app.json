@@ -1,14 +1,16 @@
 {
   "expo": {
     "name": "Amparo",
-    "slug": "Amparo",
+    "slug": "amparo",
     "version": "1.0.0",
+    "icon": "./assets/amparoIcon.png",
     "orientation": "portrait",
     "backgroundColor": "#5C9EDC",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lari.amparo"
     },
     "android": {
       "adaptiveIcon": {
@@ -16,7 +18,7 @@
         "backgroundColor": "#5C9EDC"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.Amparo"
+      "package": "com.amparo.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -25,6 +27,11 @@
       "expo-secure-store",
       "expo-web-browser",
       "expo-notifications"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "703db930-8fce-4cbf-8ac4-bef0ca546ade"
+      }
+    }
   }
 }
