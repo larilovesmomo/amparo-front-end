@@ -3,7 +3,6 @@ import { View, Image, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { useAccessibility } from '../contexts/AccessibilityContext';
 import LogoAmparo from '../assets/LogoAmparo.png';
-import LogoAmparoPreto from '../assets/LogoAmparoPreto.png';
 
 interface HeaderProps {
   logoSource?: any;
@@ -15,9 +14,9 @@ const Header: React.FC<HeaderProps> = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle={highContrast ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle={highContrast ? 'dark-content' : 'light-content'} />
       <View style={styles.container}>
-        <Image source={highContrast ? LogoAmparo : LogoAmparoPreto} style={styles.logo} resizeMode="contain" />
+        <Image source={LogoAmparo} style={styles.logo} resizeMode="contain" />
       </View>
     </SafeAreaView>
   );
@@ -26,12 +25,12 @@ const Header: React.FC<HeaderProps> = () => {
 const makeStyles = (colors: any) =>
   StyleSheet.create({
     safeArea: {
-      backgroundColor: colors.surface,
+      backgroundColor: colors.primary,
       paddingTop: getStatusBarHeight(),
     },
     container: {
       alignItems: 'center',
-      backgroundColor: colors.surface,
+      backgroundColor: colors.primary,
       paddingVertical: 10,
       width: '100%',
     },
