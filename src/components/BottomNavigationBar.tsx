@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../App';
 import { useAccessibility } from '../contexts/AccessibilityContext';
 
@@ -14,13 +15,22 @@ interface BottomNavigationBarProps {
 const BottomNavigationBar: React.FC<BottomNavigationBarProps> = ({ activeTab }) => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { colors } = useAccessibility();
+  const insets = useSafeAreaInsets();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const iconColor = (tab: string) =>
     activeTab === tab ? colors.navBarIconActive : colors.navBarIcon;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        Platform.OS === 'android' && {
+          height: 80 + insets.bottom,
+          paddingBottom: 10 + insets.bottom,
+        },
+      ]}
+    >
       <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Home')}>
         <MaterialCommunityIcons name="calendar-month" size={28} color={iconColor('calendar')} />
       </TouchableOpacity>
