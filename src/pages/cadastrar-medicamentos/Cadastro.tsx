@@ -65,6 +65,26 @@ const obterAjudaEstoque = (unidade?: string | null): string | null => {
   return ESTOQUE_AJUDA_POR_UNIDADE[unidade] ?? null;
 };
 
+const sanitizeNumero = (raw: string): string => {
+  let resultado = '';
+  let temSeparador = false;
+  for (const ch of raw) {
+    if (ch >= '0' && ch <= '9') {
+      resultado += ch;
+    } else if ((ch === '.' || ch === ',') && !temSeparador) {
+      resultado += '.';
+      temSeparador = true;
+    }
+  }
+  return resultado;
+};
+
+const isNumeroPositivo = (valor: string): boolean => {
+  if (!valor) return false;
+  const numero = parseFloat(valor);
+  return !isNaN(numero) && numero > 0;
+};
+
 
 export default function CadastrarMedicamento({ navigation }: CadastroScreenProps) {
   
@@ -202,6 +222,10 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
       Alert.alert('Atenção', 'Nome e dosagem são obrigatórios.');
       return;
     }
+    if (!isNumeroPositivo(formData.dosagem_valor)) {
+      Alert.alert('Atenção', 'Informe uma dosagem válida, maior que zero.');
+      return;
+    }
     if (isNaN(intervaloNum) || intervaloNum <= 0) {
       Alert.alert('Atenção', 'Por favor, insira um intervalo de horas válido.');
       return;
@@ -214,6 +238,15 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
     if (!formData.estoque_atual || !formData.aviso_estoque_minimo) {Alert.alert("Atenção","Por favor, informe o estoque atual e o estoque mínimo para notificação.");
     return;
   }
+
+    if (!isNumeroPositivo(formData.estoque_atual)) {
+      Alert.alert('Atenção', 'Informe uma quantidade atual de estoque válida, maior que zero.');
+      return;
+    }
+    if (!isNumeroPositivo(formData.aviso_estoque_minimo)) {
+      Alert.alert('Atenção', 'Informe um estoque mínimo válido para notificação, maior que zero.');
+      return;
+    }
 
     if (!formData.dosagem_unidade) {Alert.alert('Atenção', 'Por favor, insira uma unidade de dosagem válida.');
     return;
@@ -498,7 +531,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
             placeholder="Dosagem"
             placeholderTextColor={colors.textSecondary}
             value={formData.dosagem_valor}
-            onChangeText={(value) => handleInputChange('dosagem_valor', value)}
+            onChangeText={(value) => handleInputChange('dosagem_valor', sanitizeNumero(value))}
             style={[styles.input, styles.dosagemInput]}
             keyboardType='numeric'
           />
@@ -528,7 +561,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
             placeholder="Qtd. atual no estoque"
             placeholderTextColor={colors.textSecondary}
             value={formData.estoque_atual}
-            onChangeText={(value) => handleInputChange('estoque_atual', value)}
+            onChangeText={(value) => handleInputChange('estoque_atual', sanitizeNumero(value))}
             style={[styles.input, { flex: 1, marginRight: 10 }]}
             keyboardType="number-pad"
           />
@@ -536,7 +569,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
             placeholder="Notificar ao restar"
             placeholderTextColor={colors.textSecondary}
             value={formData.aviso_estoque_minimo}
-            onChangeText={(value) => handleInputChange('aviso_estoque_minimo', value)}
+            onChangeText={(value) => handleInputChange('aviso_estoque_minimo', sanitizeNumero(value))}
             style={[styles.input, { flex: 1 }]}
             keyboardType="number-pad"
           />
