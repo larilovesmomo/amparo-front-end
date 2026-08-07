@@ -5,8 +5,10 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   Alert,
   ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 import { makeStyles } from './style'; 
 import LogoAmparo from '../../assets/LogoAmparo.png';
@@ -53,7 +55,8 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   };
 
   return (
-    <View style={style.container}>
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={style.container}>
       <View style={style.boxTop}>
         <Image
           style={style.logo}
@@ -89,6 +92,8 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             keyboardType="number-pad"
             secureTextEntry={!showPassword}
             maxLength={4}
+            returnKeyType="done"
+            onSubmitEditing={() => Keyboard.dismiss()}
           />
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
             <Entypo
@@ -135,6 +140,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       <TouchableOpacity onPress={() => navigation.navigate('CadastroUsuario' as never)}>
         <Text style={style.textBotton}>Não tem conta? Criar agora!</Text>
       </TouchableOpacity>
-    </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
