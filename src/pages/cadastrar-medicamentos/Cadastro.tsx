@@ -392,12 +392,12 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
       style={styles.wrapper} 
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <Header logoSource={LogoAmparo} />
       <ScrollView
         style={{ flex: 1 }} 
         contentContainerStyle={[styles.container, { paddingBottom: 120 }]}
         keyboardShouldPersistTaps="handled" 
       >
-        <Header logoSource={LogoAmparo} />
         <Text style={styles.title}>{isEditing ? 'Editar Tratamento' : 'Cadastrar Medicamento'}</Text>
 
         <TextInput
