@@ -9,11 +9,10 @@ export const scheduleReminder = async (agendamento: AgendamentoType) => {
     const hour = horarioDate.getHours();
     const minute = horarioDate.getMinutes();
 
-    let trigger: Notifications.CalendarTriggerInput = {
-      type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+    let trigger: Notifications.DailyTriggerInput | Notifications.WeeklyTriggerInput = {
+      type: Notifications.SchedulableTriggerInputTypes.DAILY,
       hour,
       minute,
-      repeats: true,
     };
 
     if (agendamento.frequencia === 'Semanal') {
@@ -24,11 +23,10 @@ export const scheduleReminder = async (agendamento: AgendamentoType) => {
       const weekday = horarioAlarmeHoje.getDay() + 1; 
       
       trigger = {
-        type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+        type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
         weekday, 
         hour,
         minute,
-        repeats: true,
       };
     }
 

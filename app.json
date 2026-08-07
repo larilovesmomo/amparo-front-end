@@ -2,7 +2,7 @@
   "expo": {
     "name": "Amparo",
     "slug": "Amparo",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "icon": "./assets/amparoIcon.png",
     "orientation": "portrait",
     "backgroundColor": "#5C9EDC",
@@ -19,7 +19,7 @@
 
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/amparoIcon.png",
+        "foregroundImage": "./assets/logoAForeground.png",
         "backgroundColor": "#5C9EDC"
       },
       "package": "com.amparo.app"
@@ -27,6 +27,11 @@
 
     "web": {
       "favicon": "./assets/amparoIcon.png"
+    },
+
+    "notification": {
+    "icon": "./assets/logoAForeground.png",
+    "color": "#5C9EDC"
     },
 
     "plugins": [
@@ -40,7 +45,15 @@
       ],
       "expo-secure-store",
       "expo-web-browser",
-      "expo-notifications"
+      [
+        "expo-notifications",
+        {
+          "sounds": [
+            "./assets/alarm.mp3"
+          ],
+          "defaultChannel": "default"
+        }
+      ]
     ],
 
     "extra": {
