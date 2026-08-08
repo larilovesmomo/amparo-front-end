@@ -7,6 +7,7 @@ import axios from 'axios'
 import * as SecureStore from 'expo-secure-store'
 import api from '../../services/api';
 import { scheduleReminder, limparAlarmesAntigos } from '../../services/notificacao';
+import { getApiErrorMessage } from '../../services/errorUtils';
 import { AgendamentoType} from '../home/HomeScreen';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../App'; 
@@ -335,43 +336,16 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
       );
 
     } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const erros = error.response?.data;
-
-      console.error("Erro no cadastro do medicamento:", JSON.stringify(erros));
-
-      if (erros?.dosagem_unidade) {
-        Alert.alert(
-          'Atenção',
-          'Por favor, insira uma unidade válida para a dosagem.'
-        );
-        return;
+      if (axios.isAxiosError(error)) {
+        console.error("Erro no cadastro do medicamento:", JSON.stringify(error.response?.data));
+      } else {
+        console.error("Erro inesperado:", error);
       }
 
-      if (erros?.aviso_estoque_minimo) {
-        Alert.alert(
-          'Atenção',
-          'Por favor, insira um valor válido para o estoque mínimo.'
-        );
-        return;
-      }
-
-      if (erros?.nome) {
-        Alert.alert(
-          'Atenção',
-          'Por favor, informe um nome válido para o medicamento.'
-        );
-        return;
-      }
-
-    } else {
-      console.error("Erro inesperado:", error);
-    }
-
-    Alert.alert(
-      'Erro',
-      'Não foi possível cadastrar o medicamento.'
-    );
+      Alert.alert(
+        'Erro',
+        getApiErrorMessage(error)
+      );
 
     } finally {
       setLoading(false);
@@ -412,7 +386,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
               await api.delete(`/api/medicamentos/${initialData.id}/`);
               navigation.goBack();
             } catch (error) {
-              Alert.alert("Erro", "Não foi possível excluir o tratamento.");
+              Alert.alert("Erro", getApiErrorMessage(error));
             }
           }
         },

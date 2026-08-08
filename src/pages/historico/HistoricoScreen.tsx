@@ -13,6 +13,7 @@ import BottomNavigationBar from '../../components/BottomNavigationBar';
 import { useAuth } from '../../contexts/AuthContext';
 import * as Notifications from 'expo-notifications';
 import { notificarEstoqueBaixo } from '../../services/notificacao';
+import { getApiErrorMessage } from '../../services/errorUtils';
 import { useAccessibility, ColorPalette } from '../../contexts/AccessibilityContext';
 
 
@@ -126,7 +127,7 @@ export default function HistoricoScreen() {
       Alert.alert("Sucesso", "Registro atualizado!");
     } catch (error) {
       console.error("Erro ao atualizar registro:", error);
-      Alert.alert("Erro", "Não foi possível atualizar o registro.");
+      Alert.alert("Erro", getApiErrorMessage(error));
     } finally {
       setLoading(false);
     }

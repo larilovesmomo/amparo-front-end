@@ -5,6 +5,7 @@ import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import api from '../../services/api';
 import { format, parseISO } from 'date-fns';
 import { notificarEstoqueBaixo } from '../../services/notificacao';
+import { getApiErrorMessage } from '../../services/errorUtils';
 import { useAccessibility, ColorPalette } from '../../contexts/AccessibilityContext';
 
 export default function AlarmScreen() {
@@ -88,7 +89,7 @@ export default function AlarmScreen() {
       navigation.navigate('Home'); 
     } catch (error) {
       console.error("Erro ao registrar tomada:", error);
-      Alert.alert("Erro", "Não foi possível registrar a ação.");
+      Alert.alert("Erro", getApiErrorMessage(error));
     }
   };
 
