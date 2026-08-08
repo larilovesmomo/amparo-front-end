@@ -159,9 +159,14 @@ const signOut = async (automatic = false): Promise<void> => {
         const { access, refresh } = response.data;
         await SecureStore.setItemAsync('accessToken', access);
         await SecureStore.setItemAsync('refreshToken', refresh);
-        
+
+        try {
+          await checkAndRegisterDoses();
+        } catch (error) {
+          console.error("Falha da verificação de doses após o login:", error);
+        }
+
         setUserToken(access);
-        await checkAndRegisterDoses();
       },
       signOut,
       checkAndRegisterDoses,
