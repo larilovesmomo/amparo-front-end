@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import RNPickerSelect from 'react-native-picker-select';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { addHours, format, set, parse } from 'date-fns';
@@ -92,6 +92,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   const [loading, setLoading] = useState(false)
+  const savingRef = useRef(false)
   const route = useRoute<any>()
   const isEditing = route.params?.isEditing || false
   const initialData = route.params?.medicamentoData || null
@@ -253,6 +254,9 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
     return;
   }
 
+    if (savingRef.current) return;
+    savingRef.current = true;
+
     setLoading(true);
 
     const horarios: string[] = [];
@@ -275,6 +279,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
 
     if (horarios.length === 0) {
         Alert.alert('Atenção', 'Nenhum horário válido foi gerado. Verifique o horário de primeira e última dose do dia ou o intervalo.');
+        savingRef.current = false;
         setLoading(false);
         return;
     }
@@ -348,6 +353,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
       );
 
     } finally {
+      savingRef.current = false;
       setLoading(false);
     }
   };
