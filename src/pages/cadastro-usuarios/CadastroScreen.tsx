@@ -4,11 +4,13 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   Image,
   Alert,
   SafeAreaView,
   StatusBar,
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
   ActivityIndicator,
 } from 'react-native';
@@ -111,7 +113,8 @@ export default function CadastroScreen() {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-       
+
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View style={styles.container}>
           <TouchableOpacity
             style={styles.backButton}
@@ -184,6 +187,7 @@ export default function CadastroScreen() {
             )}
           </TouchableOpacity>
         </View>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
