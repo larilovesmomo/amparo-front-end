@@ -19,6 +19,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../App'; 
 import { AuthProvider, useAuth  } from '../../contexts/AuthContext'; 
 import { useAccessibility } from '../../contexts/AccessibilityContext';
+import { getApiErrorMessage } from '../../services/errorUtils';
 
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -46,9 +47,9 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       await signIn(username, password);
 
     } catch (error) {
-      
+
       console.error("Erro no login:", error);
-      Alert.alert('Erro de Login', 'Usuário ou senha inválidos. Tente novamente.');
+      Alert.alert('Erro de Login', getApiErrorMessage(error, { isLogin: true }));
     } finally {
       setLoading(false);
     }
