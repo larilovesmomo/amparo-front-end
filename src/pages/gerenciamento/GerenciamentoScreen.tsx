@@ -8,6 +8,7 @@ import LogoAmparo from '../../assets/LogoAmparoPreto.png';
 import BottomNavigationBar from '../../components/BottomNavigationBar';
 import { makeStyles } from './styles'; 
 import { limparAlarmesAntigos } from '../../services/notificacao';
+import { getApiErrorMessage } from '../../services/errorUtils';
 import { useAccessibility } from '../../contexts/AccessibilityContext';
 
 
@@ -40,7 +41,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
       setMedicamentos(response.data);
     } catch (error) {
       console.error("Erro ao carregar tratamentos:", error);
-      Alert.alert("Erro", "Não foi possível carregar seus tratamentos.");
+      Alert.alert("Erro", getApiErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -72,7 +73,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
               await api.delete(`/api/medicamentos/${medicamento.id}/`);
               setMedicamentos(prev => prev.filter(m => m.id !== medicamento.id));
             } catch (error) {
-              Alert.alert("Erro", "Não foi possível excluir o tratamento.");
+              Alert.alert("Erro", getApiErrorMessage(error));
             }
           }
         },

@@ -13,6 +13,7 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import api from '../../services/api';
+import { getApiErrorMessage } from '../../services/errorUtils';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAccessibility, ColorPalette } from '../../contexts/AccessibilityContext';
 import { RootStackParamList } from '../../../App';
@@ -108,7 +109,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       setRegistros(regRes.data);
     } catch (err) {
       console.error('Erro ao buscar dados:', err);
-      setError('Não foi possível carregar seus lembretes.');
+      setError(getApiErrorMessage(err));
     } finally {
       setLoading(false);
     }

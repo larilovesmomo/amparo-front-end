@@ -4,11 +4,13 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   Image,
   Alert,
   SafeAreaView,
   StatusBar,
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
   ActivityIndicator,
 } from 'react-native';
@@ -17,6 +19,7 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { makeStyles } from './styles';
 import { useAccessibility } from '../../contexts/AccessibilityContext';
+import { getApiErrorMessage } from '../../services/errorUtils';
 import LogoAmparo from '../../assets/LogoAmparo.png';
 
 export default function CadastroScreen() {
@@ -68,18 +71,7 @@ export default function CadastroScreen() {
       } else {
         console.error("Erro no cadastro:", error);
       }
-      let errorMessage = 'Não foi possível criar a conta. Tente novamente.';
-      if (axios.isAxiosError(error) && error.response?.data) {
-        const errors = error.response.data;
-        if (errors.username) {
-            errorMessage = `Nome de usuário: ${errors.username[0]}`;
-        } else if (errors.password) {
-            errorMessage = `Senha: ${errors.password[0]}`;
-        } else if (errors.error) {
-            errorMessage = errors.error;
-        }
-      }
-      Alert.alert('Erro de Cadastro', errorMessage);
+      Alert.alert('Erro de Cadastro', getApiErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -111,7 +103,8 @@ export default function CadastroScreen() {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-       
+
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View style={styles.container}>
           <TouchableOpacity
             style={styles.backButton}
@@ -184,6 +177,7 @@ export default function CadastroScreen() {
             )}
           </TouchableOpacity>
         </View>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
