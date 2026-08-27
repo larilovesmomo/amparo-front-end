@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { AgendamentoType } from '../pages/home/HomeScreen'; 
 import { clearAuthStorage } from '../services/authStorage';
+import { limparAlarmesExpirados } from '../services/notificacao';
 import { differenceInMinutes, isToday, parse, parseISO, set } from 'date-fns';
 import { Alert } from 'react-native';
 
@@ -102,6 +103,7 @@ const signOut = async (automatic = false): Promise<void> => {
 
         if (token) {
           console.log("3. bootstrapAsync: Token existe, VOU CHAMAR a verificação de doses.");
+          await limparAlarmesExpirados();
           await checkAndRegisterDoses(); 
           console.log("5. bootstrapAsync: Verificação de doses CONCLUÍDA."); 
         } else {

@@ -1,10 +1,16 @@
 import * as Notifications from 'expo-notifications';
 import { AgendamentoType } from '../pages/home/HomeScreen';
-import { parse } from 'date-fns';
+import { isBefore, parse, parseISO, startOfToday } from 'date-fns';
 import { Platform } from 'react-native';
+import api from './api';
 
 export const scheduleReminder = async (agendamento: AgendamentoType) => {
   try {
+    if (agendamento.data_fim && isBefore(parseISO(agendamento.data_fim), startOfToday())) {
+      console.log(`[Notificação] Tratamento já encerrado (data_fim ${agendamento.data_fim}). Alarme não agendado para o agendamento ${agendamento.id}.`);
+      return;
+    }
+
     const horarioDate = parse(agendamento.horario, 'HH:mm:ss', new Date());
     const hour = horarioDate.getHours();
     const minute = horarioDate.getMinutes();
@@ -67,6 +73,37 @@ export const limparAlarmesAntigos = async (nomeMedicamento: string) => {
     }
   } catch (error) {
     console.error("Erro ao limpar alarmes antigos:", error);
+  }
+};
+
+export const limparAlarmesExpirados = async () => {
+  try {
+    const agendamentosResponse = await api.get('/api/agendamentos/');
+    const agendamentos: AgendamentoType[] = agendamentosResponse.data;
+
+    const dataFimPorAgendamento = new Map<number, string | null>();
+    for (const ag of agendamentos) {
+      dataFimPorAgendamento.set(ag.id, ag.data_fim);
+    }
+
+    const agora = startOfToday();
+    const agendadas = await Notifications.getAllScheduledNotificationsAsync();
+
+    for (const notif of agendadas) {
+      const data = notif.content.data;
+      if (!data || data.screen !== 'Alarm' || data.agendamentoId == null) continue;
+
+      const dataFim = dataFimPorAgendamento.get(data.agendamentoId as number);
+      if (dataFim === undefined) {
+        await Notifications.cancelScheduledNotificationAsync(notif.identifier);
+        console.log(`[Limpeza] Alarme do agendamento ${data.agendamentoId} cancelado (agendamento não existe mais no backend).`);
+      } else if (dataFim !== null && isBefore(parseISO(dataFim), agora)) {
+        await Notifications.cancelScheduledNotificationAsync(notif.identifier);
+        console.log(`[Limpeza] Alarme do agendamento ${data.agendamentoId} cancelado (data_fim ${dataFim} já passou).`);
+      }
+    }
+  } catch (error) {
+    console.error("Erro ao limpar alarmes de tratamentos encerrados:", error);
   }
 };
 
