@@ -9,6 +9,7 @@ import {
   parse,
   parseISO,
   startOfToday,
+  startOfDay,
   differenceInMinutes,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -47,6 +48,7 @@ export interface AgendamentoType {
   frequencia: 'Diário' | 'Semanal';
   medicamento: MedicamentoType;
   data_fim: string | null;
+  created_at: string;
 }
 
 interface RegistroType {
@@ -156,8 +158,16 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     const dataSelecionadaObj = parseISO(selectedDate);
 
     const agendamentosValidos = agendamentos.filter(ag => {
-      if (!ag.data_fim) return true;
-      return !isBefore(parseISO(ag.data_fim), hoje);
+      const dataInicio = startOfDay(parseISO(ag.created_at));
+
+      if (isBefore(dataSelecionadaObj, dataInicio)) return false;
+
+      if (ag.data_fim) {
+        const dataFim = parseISO(ag.data_fim);
+        if (isAfter(dataSelecionadaObj, dataFim)) return false;
+      }
+
+      return true;
     });
 
     if (agendamentosValidos.length === 0) return [];

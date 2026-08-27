@@ -168,7 +168,7 @@ const makeStyles = (colors: any, fontScale: number) =>
     },
     stockText: {
       color: colors.cardBlueSubtext,
-      fontSize: 13 * fontScale,
+      fontSize: 14 * fontScale,
       fontStyle: 'italic',
     },
     stockValueText: {
