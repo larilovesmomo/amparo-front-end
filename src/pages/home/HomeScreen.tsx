@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, ActivityIndicator, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   format,
@@ -97,11 +97,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [agendamentos, setAgendamentos] = useState<AgendamentoType[]>([]);
   const [registros, setRegistros] = useState<RegistroType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
-      setLoading(true);
+      setRefreshing(true);
       setError(null);
       const [agRes, regRes] = await Promise.all([
         api.get('/api/agendamentos/'),
@@ -114,6 +115,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       setError(getApiErrorMessage(err));
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -280,7 +282,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Header logoSource={LogoAmparo} />
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={fetchData}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
+      >
         <CalendarComponent
           onDayPress={day => setSelectedDate(day.dateString)}
           markedDates={markedDates}

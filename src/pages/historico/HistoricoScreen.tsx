@@ -22,6 +22,7 @@ type RegistroType = any;
 export default function HistoricoScreen() {
   const [registros, setRegistros] = useState<RegistroType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'calendar' | 'search' | 'add' | 'timer' | 'settings'>('timer');
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<RegistroType | null>(null);
@@ -34,7 +35,7 @@ export default function HistoricoScreen() {
 
   const fetchHistorico = async () => {
     try {
-      setLoading(true);
+      setRefreshing(true);
       await checkAndRegisterDoses();
       const response = await api.get('/api/registros/');
       setRegistros(response.data);
@@ -42,6 +43,7 @@ export default function HistoricoScreen() {
       console.error("Erro ao buscar histórico:", error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -154,6 +156,8 @@ export default function HistoricoScreen() {
             </View>
           }
           contentContainerStyle={{ paddingBottom: 100 }}
+          onRefresh={fetchHistorico}
+          refreshing={refreshing}
         />
       )}
 
