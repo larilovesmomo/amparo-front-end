@@ -30,6 +30,7 @@ interface Medicamento {
 export default function GerenciamentoScreen({ navigation }: any) {
   const [medicamentos, setMedicamentos] = useState<Medicamento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'calendar' | 'search' | 'add' | 'timer' | 'settings'>('search');
 
   const { colors, fontScale } = useAccessibility();
@@ -37,6 +38,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
 
   const fetchData = async () => {
     try {
+      setRefreshing(true);
       const response = await api.get('/api/medicamentos/');
       setMedicamentos(response.data);
     } catch (error) {
@@ -44,8 +46,8 @@ export default function GerenciamentoScreen({ navigation }: any) {
       Alert.alert("Erro", getApiErrorMessage(error));
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-    console.log("Tratamentos carregados:", medicamentos);
   };
 
   useFocusEffect(
@@ -112,7 +114,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
           }
           
           onRefresh={fetchData}
-          refreshing={loading}
+          refreshing={refreshing}
           
           contentContainerStyle={{ paddingBottom: 100 }}
         />
