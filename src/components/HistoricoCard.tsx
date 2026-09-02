@@ -1,8 +1,9 @@
 // src/components/HistoricoCard.tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { format, parseISO } from 'date-fns';
+import { useAccessibility } from '../contexts/AccessibilityContext';
 
 type HistoricoCardProps = {
   registro: {
@@ -21,13 +22,15 @@ type HistoricoCardProps = {
 };
 
 const HistoricoCard: React.FC<HistoricoCardProps> = ({ registro, onPress }) => {
+  const { colors, fontScale } = useAccessibility();
+  const styles = useMemo(() => makeStyles(colors, fontScale), [colors, fontScale]);
   const medicamento = registro?.agendamento?.medicamento;
   const horario = registro?.agendamento?.horario;
   const tomou = registro?.tomou;
 
   const cardStyle = [styles.card, !tomou && styles.cardMissed];
   const textStyle = [styles.baseText, !tomou && styles.textMissed];
-  const iconColor = tomou ? '#fff' : '#AAB5C1';
+  const iconColor = tomou ? colors.cardBlueText : colors.cardBlueSubtext;
 
   if (!medicamento || !horario) {
     return (
@@ -57,60 +60,61 @@ const HistoricoCard: React.FC<HistoricoCardProps> = ({ registro, onPress }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#558DC2',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-    marginHorizontal: 16,
-  },
-  cardMissed: {
-    backgroundColor: '#546581', 
-    borderColor: '#C8D0D9',
-    borderWidth: 1,
-  },
-  cardError: {
-    backgroundColor: '#FFEBEE',
-    borderColor: '#D32F2F',
-    borderWidth: 1,
-  },
-  errorText: {
-      color: '#D32F2F',
+const makeStyles = (colors: any, fontScale: number) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: colors.cardBlue,
+      borderRadius: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 10,
+      marginHorizontal: 16,
+    },
+    cardMissed: {
+      backgroundColor: colors.navBar,
+      borderColor: colors.border,
+      borderWidth: 1,
+    },
+    cardError: {
+      backgroundColor: '#FFEBEE',
+      borderColor: colors.error,
+      borderWidth: 1,
+    },
+    errorText: {
+      color: colors.error,
       fontStyle: 'italic',
-  },
-  leftContent: {
-    flex: 1,
-  },
-  rightContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  medicationText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  dosageText: {
-    fontSize: 14,
-    color: '#E0EFFF',
-  },
-  timeText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginRight: 8,
-  },
-  baseText: {
-    color: '#fff',
-  },
-  textMissed: {
-    color: '#fff', 
-  },
-});
+    },
+    leftContent: {
+      flex: 1,
+    },
+    rightContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    medicationText: {
+      fontSize: 16 * fontScale,
+      fontWeight: 'bold',
+      color: colors.cardBlueText,
+    },
+    dosageText: {
+      fontSize: 14 * fontScale,
+      color: colors.cardBlueSubtext,
+    },
+    timeText: {
+      fontSize: 16 * fontScale,
+      fontWeight: 'bold',
+      color: colors.cardBlueText,
+      marginRight: 8,
+    },
+    baseText: {
+      color: colors.cardBlueText,
+    },
+    textMissed: {
+      color: colors.cardBlueText,
+    },
+  });
 
 export default HistoricoCard;
