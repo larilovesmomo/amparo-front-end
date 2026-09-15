@@ -63,7 +63,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
   const handleDelete = (medicamento: Medicamento) => {
     Alert.alert(
       "Excluir Tratamento",
-      "Isso irá apagar este medicamento e todos os seus lembretes permanentemente. Deseja continuar?",
+      "Isso irá excluir definitivamente este medicamento e todo o seu histórico. Esta ação não pode ser desfeita. Deseja continuar?",
       [
         { text: "Cancelar", style: "cancel" },
         { 
@@ -73,6 +73,28 @@ export default function GerenciamentoScreen({ navigation }: any) {
             try {
               await limparAlarmesAntigos(medicamento.nome);
               await api.delete(`/api/medicamentos/${medicamento.id}/`);
+              setMedicamentos(prev => prev.filter(m => m.id !== medicamento.id));
+            } catch (error) {
+              Alert.alert("Erro", getApiErrorMessage(error));
+            }
+          }
+        },
+      ]
+    );
+  };
+
+  const handleInativar = (medicamento: Medicamento) => {
+    Alert.alert(
+      "Inativar medicamento",
+      "O medicamento será removido dos tratamentos ativos, mas seu histórico será preservado. Deseja continuar?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { 
+          text: "Inativar", 
+          onPress: async () => {
+            try {
+              await limparAlarmesAntigos(medicamento.nome);
+              await api.post(`/api/medicamentos/${medicamento.id}/inativar/`);
               setMedicamentos(prev => prev.filter(m => m.id !== medicamento.id));
             } catch (error) {
               Alert.alert("Erro", getApiErrorMessage(error));
@@ -104,6 +126,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
               medicamento={item}
               onEdit={() => handleEdit(item)}
               onDelete={() => handleDelete(item)}
+              onInativar={() => handleInativar(item)}
             />
           )}
           

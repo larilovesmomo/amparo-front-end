@@ -9,9 +9,10 @@ type TratamentoCardProps = {
   medicamento: any; 
   onEdit: () => void;
   onDelete: () => void;
+  onInativar: () => void;
 };
 
-const TratamentoCard: React.FC<TratamentoCardProps> = ({ medicamento, onEdit, onDelete }) => {
+const TratamentoCard: React.FC<TratamentoCardProps> = ({ medicamento, onEdit, onDelete, onInativar }) => {
   const { colors, fontScale } = useAccessibility();
   const styles = useMemo(() => makeStyles(colors, fontScale), [colors, fontScale]);
   const dataFimString = medicamento.agendamentos?.[0]?.data_fim;
@@ -19,14 +20,17 @@ const TratamentoCard: React.FC<TratamentoCardProps> = ({ medicamento, onEdit, on
 
   const renderRightActions = (progress: any, dragX: any) => {
     const trans = dragX.interpolate({
-      inputRange: [-100, 0],
-      outputRange: [0, 100],
+      inputRange: [-150, 0],
+      outputRange: [0, 150],
       extrapolate: 'clamp',
     });
     return (
       <Animated.View style={[styles.actionsContainer, { transform: [{ translateX: trans }] }]}>
         <TouchableOpacity style={[styles.actionButton, styles.editButton]} onPress={onEdit}>
           <MaterialCommunityIcons name="pencil" size={24} color="#fff" />
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.actionButton, styles.inativarButton]} onPress={onInativar}>
+          <MaterialCommunityIcons name="pause-circle-outline" size={24} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={onDelete}>
           <MaterialCommunityIcons name="trash-can-outline" size={24} color="#fff" />
@@ -105,7 +109,7 @@ const makeStyles = (colors: any, fontScale: number) =>
     },
     actionsContainer: {
       flexDirection: 'row',
-      width: 160,
+      width: 240,
       marginBottom: 12,
       marginRight: 16,
     },
@@ -123,6 +127,9 @@ const makeStyles = (colors: any, fontScale: number) =>
       backgroundColor: '#2196F3',
       borderTopLeftRadius: 12,
       borderBottomLeftRadius: 12,
+    },
+    inativarButton: {
+      backgroundColor: '#FF9800',
     },
     deleteButton: {
       backgroundColor: '#F44336',
