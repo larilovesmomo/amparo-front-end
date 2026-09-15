@@ -32,6 +32,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'calendar' | 'search' | 'add' | 'timer' | 'settings'>('search');
+  const [togglingId, setTogglingId] = useState<number | null>(null);
 
   const { colors, fontScale } = useAccessibility();
   const styles = React.useMemo(() => makeStyles(colors, fontScale), [colors, fontScale]);
@@ -39,7 +40,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
   const fetchData = async () => {
     try {
       setRefreshing(true);
-      const response = await api.get('/api/medicamentos/');
+      const response = await api.get('/api/medicamentos/?include_inactive=true');
       setMedicamentos(response.data);
     } catch (error) {
       console.error("Erro ao carregar tratamentos:", error);
@@ -95,7 +96,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
             try {
               await limparAlarmesAntigos(medicamento.nome);
               await api.post(`/api/medicamentos/${medicamento.id}/inativar/`);
-              setMedicamentos(prev => prev.filter(m => m.id !== medicamento.id));
+              setMedicamentos(prev => prev.map(m => m.id === medicamento.id ? { ...m, is_active: false } : m));
             } catch (error) {
               Alert.alert("Erro", getApiErrorMessage(error));
             }
@@ -103,6 +104,26 @@ export default function GerenciamentoScreen({ navigation }: any) {
         },
       ]
     );
+  };
+
+  const handleToggleActive = async (medicamento: Medicamento, novoAtivo: boolean) => {
+    const antigoAtivo = medicamento.is_active;
+    setTogglingId(medicamento.id);
+    setMedicamentos(prev => prev.map(m => m.id === medicamento.id ? { ...m, is_active: novoAtivo } : m));
+
+    try {
+      if (novoAtivo) {
+        await api.post(`/api/medicamentos/${medicamento.id}/reativar/`);
+      } else {
+        await limparAlarmesAntigos(medicamento.nome);
+        await api.post(`/api/medicamentos/${medicamento.id}/inativar/`);
+      }
+    } catch (error) {
+      setMedicamentos(prev => prev.map(m => m.id === medicamento.id ? { ...m, is_active: antigoAtivo } : m));
+      Alert.alert("Erro", getApiErrorMessage(error));
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   if (loading) {
@@ -127,6 +148,8 @@ export default function GerenciamentoScreen({ navigation }: any) {
               onEdit={() => handleEdit(item)}
               onDelete={() => handleDelete(item)}
               onInativar={() => handleInativar(item)}
+              onToggleActive={handleToggleActive}
+              isToggling={togglingId === item.id}
             />
           )}
           

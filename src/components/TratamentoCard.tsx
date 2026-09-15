@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Switch, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { parseISO, isAfter } from 'date-fns'
@@ -10,15 +10,19 @@ type TratamentoCardProps = {
   onEdit: () => void;
   onDelete: () => void;
   onInativar: () => void;
+  onToggleActive?: (medicamento: any, novoEstado: boolean) => void;
+  isToggling?: boolean;
 };
 
-const TratamentoCard: React.FC<TratamentoCardProps> = ({ medicamento, onEdit, onDelete, onInativar }) => {
+const TratamentoCard: React.FC<TratamentoCardProps> = ({ medicamento, onEdit, onDelete, onInativar, onToggleActive, isToggling }) => {
   const { colors, fontScale } = useAccessibility();
   const styles = useMemo(() => makeStyles(colors, fontScale), [colors, fontScale]);
   const dataFimString = medicamento.agendamentos?.[0]?.data_fim;
   const isFinished = dataFimString ? isAfter(new Date(), parseISO(dataFimString)) : false;
+  const isInactive = medicamento.is_active === false;
 
   const renderRightActions = (progress: any, dragX: any) => {
+    if (isInactive) return null;
     const trans = dragX.interpolate({
       inputRange: [-150, 0],
       outputRange: [0, 150],
@@ -41,14 +45,32 @@ const TratamentoCard: React.FC<TratamentoCardProps> = ({ medicamento, onEdit, on
 
   return (
     <GestureHandlerRootView>
-      <Swipeable renderRightActions={renderRightActions}>
-        <TouchableOpacity onPress={onEdit} activeOpacity={0.7}>
-          <View style={[styles.card, isFinished && styles.cardFinished]}>
-            <FontAwesome5 name="pills" size={24} color={isFinished ? colors.textSecondary : colors.primary} style={styles.iconContainer} />
+      <Swipeable renderRightActions={renderRightActions} enabled={!isInactive}>
+        <TouchableOpacity onPress={isInactive ? undefined : onEdit} activeOpacity={0.7}>
+          <View style={[styles.card, isFinished && styles.cardFinished, isInactive && styles.cardInactive]}>
+            <FontAwesome5 name="pills" size={24} color={isInactive ? colors.textSecondary : isFinished ? colors.textSecondary : colors.primary} style={styles.iconContainer} />
             <View style={styles.infoContainer}>
-              <Text style={[styles.medicationName, isFinished && styles.textFinished]}>{medicamento.nome}</Text>
-              <Text style={[styles.dosage, isFinished && styles.textFinished]}>{medicamento.dosagem_valor} {medicamento.dosagem_unidade}</Text>
-              <Text style={styles.statusText}>{isFinished ? 'Tratamento finalizado' : 'Em andamento'}</Text>
+              <Text style={[styles.medicationName, (isFinished || isInactive) && styles.textFinished]}>{medicamento.nome}</Text>
+              <Text style={[styles.dosage, (isFinished || isInactive) && styles.textFinished]}>{medicamento.dosagem_valor} {medicamento.dosagem_unidade}</Text>
+              {isInactive ? (
+                <Text style={styles.inactiveText}>Inativo</Text>
+              ) : (
+                <Text style={styles.statusText}>{isFinished ? 'Tratamento finalizado' : 'Em andamento'}</Text>
+              )}
+            </View>
+            <View style={styles.toggleContainer}>
+              {isToggling ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <Switch
+                  value={!isInactive}
+                  onValueChange={(value) => onToggleActive?.(medicamento, value)}
+                  disabled={isFinished}
+                  trackColor={{ false: colors.border, true: colors.primary }}
+                  thumbColor={isInactive ? colors.textSecondary : '#fff'}
+                  accessibilityLabel={`Alternar estado do medicamento ${medicamento.nome}`}
+                />
+              )}
             </View>
           </View>
         </TouchableOpacity>
@@ -76,6 +98,10 @@ const makeStyles = (colors: any, fontScale: number) =>
     cardFinished: {
       backgroundColor: colors.border,
     },
+    cardInactive: {
+      backgroundColor: colors.border,
+      opacity: 0.7,
+    },
     iconContainer: {
       marginRight: 16,
     },
@@ -95,6 +121,13 @@ const makeStyles = (colors: any, fontScale: number) =>
     statusText: {
       fontSize: 12 * fontScale,
       color: '#00897B',
+      fontWeight: '500',
+      marginTop: 4,
+      fontStyle: 'italic',
+    },
+    inactiveText: {
+      fontSize: 12 * fontScale,
+      color: '#F44336',
       fontWeight: '500',
       marginTop: 4,
       fontStyle: 'italic',
@@ -135,6 +168,11 @@ const makeStyles = (colors: any, fontScale: number) =>
       backgroundColor: '#F44336',
       borderTopRightRadius: 12,
       borderBottomRightRadius: 12,
+    },
+    toggleContainer: {
+      marginLeft: 8,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
   });
 

@@ -160,6 +160,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     const dataSelecionadaObj = parseISO(selectedDate);
 
     const agendamentosValidos = agendamentos.filter(ag => {
+      if (ag.medicamento.is_active === false) return false;
+
       const dataInicio = startOfDay(parseISO(ag.created_at));
 
       if (isBefore(dataSelecionadaObj, dataInicio)) return false;
