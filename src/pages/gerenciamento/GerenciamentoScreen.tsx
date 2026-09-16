@@ -32,6 +32,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'calendar' | 'search' | 'add' | 'timer' | 'settings'>('search');
+  const [togglingId, setTogglingId] = useState<number | null>(null);
 
   const { colors, fontScale } = useAccessibility();
   const styles = React.useMemo(() => makeStyles(colors, fontScale), [colors, fontScale]);
@@ -39,7 +40,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
   const fetchData = async () => {
     try {
       setRefreshing(true);
-      const response = await api.get('/api/medicamentos/');
+      const response = await api.get('/api/medicamentos/?include_inactive=true');
       setMedicamentos(response.data);
     } catch (error) {
       console.error("Erro ao carregar tratamentos:", error);
@@ -63,7 +64,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
   const handleDelete = (medicamento: Medicamento) => {
     Alert.alert(
       "Excluir Tratamento",
-      "Isso irá apagar este medicamento e todos os seus lembretes permanentemente. Deseja continuar?",
+      "Isso irá excluir definitivamente este medicamento e todo o seu histórico. Esta ação não pode ser desfeita. Deseja continuar?",
       [
         { text: "Cancelar", style: "cancel" },
         { 
@@ -81,6 +82,48 @@ export default function GerenciamentoScreen({ navigation }: any) {
         },
       ]
     );
+  };
+
+  const handleInativar = (medicamento: Medicamento) => {
+    Alert.alert(
+      "Inativar medicamento",
+      "O medicamento será removido dos tratamentos ativos, mas seu histórico será preservado. Deseja continuar?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { 
+          text: "Inativar", 
+          onPress: async () => {
+            try {
+              await limparAlarmesAntigos(medicamento.nome);
+              await api.post(`/api/medicamentos/${medicamento.id}/inativar/`);
+              setMedicamentos(prev => prev.map(m => m.id === medicamento.id ? { ...m, is_active: false } : m));
+            } catch (error) {
+              Alert.alert("Erro", getApiErrorMessage(error));
+            }
+          }
+        },
+      ]
+    );
+  };
+
+  const handleToggleActive = async (medicamento: Medicamento, novoAtivo: boolean) => {
+    const antigoAtivo = medicamento.is_active;
+    setTogglingId(medicamento.id);
+    setMedicamentos(prev => prev.map(m => m.id === medicamento.id ? { ...m, is_active: novoAtivo } : m));
+
+    try {
+      if (novoAtivo) {
+        await api.post(`/api/medicamentos/${medicamento.id}/reativar/`);
+      } else {
+        await limparAlarmesAntigos(medicamento.nome);
+        await api.post(`/api/medicamentos/${medicamento.id}/inativar/`);
+      }
+    } catch (error) {
+      setMedicamentos(prev => prev.map(m => m.id === medicamento.id ? { ...m, is_active: antigoAtivo } : m));
+      Alert.alert("Erro", getApiErrorMessage(error));
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   if (loading) {
@@ -104,6 +147,9 @@ export default function GerenciamentoScreen({ navigation }: any) {
               medicamento={item}
               onEdit={() => handleEdit(item)}
               onDelete={() => handleDelete(item)}
+              onInativar={() => handleInativar(item)}
+              onToggleActive={handleToggleActive}
+              isToggling={togglingId === item.id}
             />
           )}
           

@@ -65,6 +65,10 @@ export const makeStyles = (colors: ColorPalette, fontScale: number, highContrast
     backgroundColor: '#F44336',
     marginTop: 20,
   },
+  inativarButton: {
+    backgroundColor: '#FF9800',
+    marginTop: 20,
+  },
   buttonText: {
     color: colors.textOnPrimary,
     fontSize: 16 * fontScale,

@@ -66,6 +66,10 @@ const signOut = async (automatic = false): Promise<void> => {
 
       for (const ag of agendamentos) {
         if (ag.frequencia !== 'Diário') continue;
+        if (ag.medicamento.is_active === false) {
+          console.log(`Dose ignorada para ${ag.medicamento.nome} às ${ag.horario}: medicamento inativo.`);
+          continue;
+        }
 
         const horarioAlarme = parse(ag.horario, 'HH:mm:ss', new Date());
 

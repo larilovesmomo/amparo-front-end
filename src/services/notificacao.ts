@@ -96,10 +96,8 @@ export const limparAlarmesExpirados = async () => {
       const dataFim = dataFimPorAgendamento.get(data.agendamentoId as number);
       if (dataFim === undefined) {
         await Notifications.cancelScheduledNotificationAsync(notif.identifier);
-        console.log(`[Limpeza] Alarme do agendamento ${data.agendamentoId} cancelado (agendamento não existe mais no backend).`);
       } else if (dataFim !== null && isBefore(parseISO(dataFim), agora)) {
         await Notifications.cancelScheduledNotificationAsync(notif.identifier);
-        console.log(`[Limpeza] Alarme do agendamento ${data.agendamentoId} cancelado (data_fim ${dataFim} já passou).`);
       }
     }
   } catch (error) {

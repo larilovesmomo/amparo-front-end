@@ -380,7 +380,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
   const handleDelete = () => {
     Alert.alert(
       "Excluir Tratamento",
-      "Isso irá apagar este medicamento e todos os seus lembretes permanentemente. Deseja continuar?",
+      "Isso irá excluir definitivamente este medicamento e todo o seu histórico. Esta ação não pode ser desfeita. Deseja continuar?",
       [
         { text: "Cancelar", style: "cancel" },
         {
@@ -390,6 +390,28 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
             try {
               await limparAlarmesAntigos(initialData.nome);
               await api.delete(`/api/medicamentos/${initialData.id}/`);
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert("Erro", getApiErrorMessage(error));
+            }
+          }
+        },
+      ]
+    );
+  };
+
+  const handleInativar = () => {
+    Alert.alert(
+      "Inativar medicamento",
+      "O medicamento será removido dos tratamentos ativos, mas seu histórico será preservado. Deseja continuar?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Inativar",
+          onPress: async () => {
+            try {
+              await limparAlarmesAntigos(initialData.nome);
+              await api.post(`/api/medicamentos/${initialData.id}/inativar/`);
               navigation.goBack();
             } catch (error) {
               Alert.alert("Erro", getApiErrorMessage(error));
@@ -584,6 +606,11 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
         {isEditing && (
           <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={handleDelete} disabled={loading}>
             <Text style={styles.buttonText}>EXCLUIR</Text>
+          </TouchableOpacity>
+        )}
+        {isEditing && (
+          <TouchableOpacity style={[styles.button, styles.inativarButton]} onPress={handleInativar} disabled={loading}>
+            <Text style={styles.buttonText}>INATIVAR</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
