@@ -7,6 +7,7 @@ import { format, parseISO, isToday } from 'date-fns';
 import { notificarEstoqueBaixo } from '../../services/notificacao';
 import { getApiErrorMessage } from '../../services/errorUtils';
 import { useAccessibility, ColorPalette } from '../../contexts/AccessibilityContext';
+import log from '../../services/log';
 
 export default function AlarmScreen() {
   const route = useRoute<any>();
@@ -45,7 +46,7 @@ export default function AlarmScreen() {
         } catch (error: any) {
           
           if (error.response && error.response.status === 404 && agendamentoRef.current) {
-            console.log("Procurando o agendamento recriado pós-edição...");
+            log("Procurando o agendamento recriado pós-edição...");
             try {
               const listaResponse = await api.get('/api/agendamentos/');
               const novaLista = listaResponse.data;
