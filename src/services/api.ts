@@ -3,6 +3,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { clearAuthStorage } from './authStorage';
+import log from './log';
 
 // Esta variável impede loops infinitos de refresh
 let isRefreshing = false;
@@ -58,7 +59,7 @@ api.interceptors.response.use(
               failedRequestsQueue = [];
               if (onUnauthorized) {
               onUnauthorized();
-              console.log("Sem refresh token disponível. Limpando sessão.");
+              log("Sem refresh token disponível. Limpando sessão.");
             }
 
             // Se não há refresh token, desloga o usuário
@@ -89,7 +90,7 @@ api.interceptors.response.use(
           failedRequestsQueue.forEach(promise => promise.reject(refreshError));
           failedRequestsQueue = [];
           // (Aqui você chamaria sua função global de signOut)
-          console.log("Refresh token inválido, sessão removida.");
+          log("Refresh token inválido, sessão removida.");
         }
 
           return Promise.reject(refreshError);

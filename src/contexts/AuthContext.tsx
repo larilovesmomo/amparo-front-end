@@ -8,6 +8,7 @@ import { clearAuthStorage } from '../services/authStorage';
 import { limparAlarmesExpirados } from '../services/notificacao';
 import { differenceInMinutes, isToday, parse, parseISO, set } from 'date-fns';
 import { Alert } from 'react-native';
+import log from '../services/log';
 
 type AuthContextType = {
   signIn: (username: string, password: string) => Promise<void>;
@@ -51,7 +52,7 @@ const signOut = async (automatic = false): Promise<void> => {
 }
 
   const checkAndRegisterDoses = async () => {
-    console.log("4. checkAndRegisterDoses: DENTRO da função, iniciando chamadas API...");
+    log("4. checkAndRegisterDoses: DENTRO da função, iniciando chamadas API...");
 
     try{
       const [agendamentosResponse, registrosResponse] = await Promise.all([
@@ -67,7 +68,7 @@ const signOut = async (automatic = false): Promise<void> => {
       for (const ag of agendamentos) {
         if (ag.frequencia !== 'Diário') continue;
         if (ag.medicamento.is_active === false) {
-          console.log(`Dose ignorada para ${ag.medicamento.nome} às ${ag.horario}: medicamento inativo.`);
+          log(`Dose ignorada para ${ag.medicamento.nome} às ${ag.horario}: medicamento inativo.`);
           continue;
         }
 
@@ -80,7 +81,7 @@ const signOut = async (automatic = false): Promise<void> => {
           );
 
           if (!jaRegistradoHoje) {
-            console.log(`Dose não tomada detectada para: ${ag.medicamento.nome} às ${ag.horario}. Registrando...`);
+            log(`Dose não tomada detectada para: ${ag.medicamento.nome} às ${ag.horario}. Registrando...`);
             await api.post('/api/registros/', {
               agendamento: ag.id,
               tomou: false,
@@ -98,27 +99,27 @@ const signOut = async (automatic = false): Promise<void> => {
 
   useEffect(() => {
     const bootstrapAsync = async () => {
-      console.log("1. bootstrapAsync: Iniciando verificação de token...");
+      log("1. bootstrapAsync: Iniciando verificação de token...");
       
       try {
         const token = await SecureStore.getItemAsync('accessToken');
         setUserToken(token);
-        console.log("2. bootstrapAsync: Token encontrado no SecureStore:", token ? `Sim (tamanho: ${token.length})` : 'Não (null)');
+        log("2. bootstrapAsync: Token encontrado no SecureStore:", token ? `Sim (tamanho: ${token.length})` : 'Não (null)');
 
         if (token) {
-          console.log("3. bootstrapAsync: Token existe, VOU CHAMAR a verificação de doses.");
+          log("3. bootstrapAsync: Token existe, VOU CHAMAR a verificação de doses.");
           await limparAlarmesExpirados();
           await checkAndRegisterDoses(); 
-          console.log("5. bootstrapAsync: Verificação de doses CONCLUÍDA."); 
+          log("5. bootstrapAsync: Verificação de doses CONCLUÍDA."); 
         } else {
-          console.log("3. bootstrapAsync: Token NÃO existe");
+          log("3. bootstrapAsync: Token NÃO existe");
           setUserToken(null);
         }
       } catch (e) {
         console.error('ERRO CRÍTICO no bootstrapAsync:', e);
         await signOut();
       } finally {
-        console.log("6. bootstrapAsync: Finalizando, setIsLoading(false).");
+        log("6. bootstrapAsync: Finalizando, setIsLoading(false).");
         setIsLoading(false);
       }
     };
