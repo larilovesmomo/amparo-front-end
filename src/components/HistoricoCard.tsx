@@ -26,7 +26,7 @@ const HistoricoCard: React.FC<HistoricoCardProps> = ({ registro, onPress }) => {
   const { colors, fontScale } = useAccessibility();
   const styles = useMemo(() => makeStyles(colors, fontScale), [colors, fontScale]);
   const medicamento = registro?.agendamento?.medicamento;
-  const horario = registro?.agendamento?.horario;
+  const horario = registro?.data_hora_tomada;
   const tomou = registro?.tomou;
   const isInactive = medicamento?.is_active === false;
 
@@ -53,7 +53,7 @@ const HistoricoCard: React.FC<HistoricoCardProps> = ({ registro, onPress }) => {
           <Text style={[styles.dosageText, textStyle]}>{medicamento.dosagem_formatada ?? ''}</Text>
         </View>
         <View style={styles.rightContent}>
-          <Text style={[styles.timeText, textStyle]}>{format(parseISO(`1970-01-01T${horario}`), 'HH:mm')}</Text>
+          <Text style={[styles.timeText, textStyle]}>{format(parseISO(horario), 'HH:mm')}</Text>
           <MaterialCommunityIcons
             name={tomou ? "check-circle" : "close-circle"}
             size={24}
