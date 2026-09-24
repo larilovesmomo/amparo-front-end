@@ -14,6 +14,7 @@ type HistoricoCardProps = {
       medicamento: {
         nome: string;
         dosagem_formatada: string;
+        is_active: boolean;
       }
     }
   }
@@ -25,11 +26,12 @@ const HistoricoCard: React.FC<HistoricoCardProps> = ({ registro, onPress }) => {
   const { colors, fontScale } = useAccessibility();
   const styles = useMemo(() => makeStyles(colors, fontScale), [colors, fontScale]);
   const medicamento = registro?.agendamento?.medicamento;
-  const horario = registro?.agendamento?.horario;
+  const horario = registro?.data_hora_tomada;
   const tomou = registro?.tomou;
+  const isInactive = medicamento?.is_active === false;
 
-  const cardStyle = [styles.card, !tomou && styles.cardMissed];
-  const textStyle = [styles.baseText, !tomou && styles.textMissed];
+  const cardStyle = [styles.card, !tomou && styles.cardMissed, isInactive && styles.cardInactive];
+  const textStyle = [styles.baseText, !tomou && styles.textMissed, isInactive && styles.textInactive];
   const iconColor = tomou ? colors.cardBlueText : colors.cardBlueSubtext;
 
   if (!medicamento || !horario) {
@@ -44,11 +46,14 @@ const HistoricoCard: React.FC<HistoricoCardProps> = ({ registro, onPress }) => {
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <View style={cardStyle}>
         <View style={styles.leftContent}>
-          <Text style={[styles.medicationText, textStyle]}>{medicamento.nome}</Text>
+          <View style={styles.nameRow}>
+            <Text style={[styles.medicationText, textStyle]}>{medicamento.nome}</Text>
+            {isInactive && <Text style={styles.inactiveText}> (Inativo)</Text>}
+          </View>
           <Text style={[styles.dosageText, textStyle]}>{medicamento.dosagem_formatada ?? ''}</Text>
         </View>
         <View style={styles.rightContent}>
-          <Text style={[styles.timeText, textStyle]}>{format(parseISO(`1970-01-01T${horario}`), 'HH:mm')}</Text>
+          <Text style={[styles.timeText, textStyle]}>{format(parseISO(horario), 'HH:mm')}</Text>
           <MaterialCommunityIcons
             name={tomou ? "check-circle" : "close-circle"}
             size={24}
@@ -69,7 +74,7 @@ const makeStyles = (colors: any, fontScale: number) =>
       paddingHorizontal: 16,
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'stretch',
       marginBottom: 10,
       marginHorizontal: 16,
     },
@@ -77,6 +82,12 @@ const makeStyles = (colors: any, fontScale: number) =>
       backgroundColor: colors.navBar,
       borderColor: colors.border,
       borderWidth: 1,
+    },
+    cardInactive: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderStyle: 'dashed',
     },
     cardError: {
       backgroundColor: '#FFEBEE',
@@ -89,6 +100,11 @@ const makeStyles = (colors: any, fontScale: number) =>
     },
     leftContent: {
       flex: 1,
+      justifyContent: 'center',
+    },
+    nameRow: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
     },
     rightContent: {
       flexDirection: 'row',
@@ -114,6 +130,16 @@ const makeStyles = (colors: any, fontScale: number) =>
     },
     textMissed: {
       color: colors.cardBlueText,
+    },
+    textInactive: {
+      color: colors.textSecondary,
+    },
+    inactiveText: {
+      fontSize: 12 * fontScale,
+      color: '#F44336',
+      fontWeight: '500',
+      marginTop: 1,
+      fontStyle: 'italic',
     },
   });
 

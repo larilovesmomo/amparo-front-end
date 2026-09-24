@@ -58,7 +58,7 @@ interface RegistroType {
   agendamento: {
     id: number;
     horario: string;
-    medicamento: { id: number; nome: string };
+    medicamento: { id: number; nome: string; is_active: boolean };
   };
 }
 
@@ -228,7 +228,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     const isToday = isSameDay(dataSelecionadaObj, hoje);
 
     const registrosDoDia = registros.filter(
-      r => format(parseISO(r.data_hora_tomada), 'yyyy-MM-dd') === selectedDate,
+      r => format(parseISO(r.data_hora_tomada), 'yyyy-MM-dd') === selectedDate
+        && r.agendamento.medicamento.is_active !== false,
     );
     const tomados = registrosDoDia.filter(r => r.tomou).length;
     const total = registrosDoDia.length;

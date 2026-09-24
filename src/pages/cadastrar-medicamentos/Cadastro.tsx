@@ -334,10 +334,18 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
 
       setSavedFormData({ ...formData });
 
+      const reativado = response.data.reativado;
+
+      const mensagem = reativado
+        ? 'Medicamento reativado com sucesso.'
+        : response.status === 200
+          ? 'Medicamento já cadastrado.'
+          : 'Medicamento e agendamento cadastrados.';
+
       Alert.alert(
-        'Sucesso!', 
-        'Medicamento e agendamento cadastrados.',
-        [{ text: 'OK', onPress: () => (onSuccess ? onSuccess() : navigation.goBack()) }] 
+        'Sucesso!',
+        mensagem,
+        [{ text: 'OK', onPress: () => (onSuccess ? onSuccess() : navigation.goBack()) }]
       );
 
     } catch (error) {

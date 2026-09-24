@@ -3,11 +3,12 @@ import { AgendamentoType } from '../pages/home/HomeScreen';
 import { isBefore, parse, parseISO, startOfToday } from 'date-fns';
 import { Platform } from 'react-native';
 import api from './api';
+import log from './log';
 
 export const scheduleReminder = async (agendamento: AgendamentoType) => {
   try {
     if (agendamento.data_fim && isBefore(parseISO(agendamento.data_fim), startOfToday())) {
-      console.log(`[Notificação] Tratamento já encerrado (data_fim ${agendamento.data_fim}). Alarme não agendado para o agendamento ${agendamento.id}.`);
+      log(`[Notificação] Tratamento já encerrado (data_fim ${agendamento.data_fim}). Alarme não agendado para o agendamento ${agendamento.id}.`);
       return;
     }
 
@@ -54,7 +55,7 @@ export const scheduleReminder = async (agendamento: AgendamentoType) => {
       trigger, 
     });
 
-    console.log(`[Notificação] Alarme agendado com sucesso para às ${hour}:${minute}. ID Nativo: ${idNativo}`);
+    log(`[Notificação] Alarme agendado com sucesso para às ${hour}:${minute}. ID Nativo: ${idNativo}`);
 
   } catch (error) {
     console.error(`Falha ao agendar notificação para agendamento ${agendamento.id}:`, error);
@@ -68,7 +69,7 @@ export const limparAlarmesAntigos = async (nomeMedicamento: string) => {
     for (const notif of agendadas) {
       if (notif.content.body && notif.content.body.includes(nomeMedicamento)) {
         await Notifications.cancelScheduledNotificationAsync(notif.identifier);
-        console.log(`[Limpeza] Alarme ${nomeMedicamento} apagado com sucesso.`);
+        log(`[Limpeza] Alarme ${nomeMedicamento} apagado com sucesso.`);
       }
     }
   } catch (error) {
@@ -117,7 +118,7 @@ export const notificarEstoqueBaixo = async (nomeMedicamento: string, estoqueAtua
       },
       trigger: null, 
     });
-    console.log(`[Notificação] Alerta de estoque baixo disparado para o medicamento: ${nomeMedicamento}`);
+    log(`[Notificação] Alerta de estoque baixo disparado para o medicamento: ${nomeMedicamento}`);
   } catch (error) {
     console.error("Erro ao disparar notificação de estoque baixo:", error);
   }

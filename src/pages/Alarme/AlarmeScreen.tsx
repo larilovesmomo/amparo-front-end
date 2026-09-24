@@ -3,10 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } fr
 import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import api from '../../services/api';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isToday } from 'date-fns';
 import { notificarEstoqueBaixo } from '../../services/notificacao';
 import { getApiErrorMessage } from '../../services/errorUtils';
 import { useAccessibility, ColorPalette } from '../../contexts/AccessibilityContext';
+import log from '../../services/log';
 
 export default function AlarmScreen() {
   const route = useRoute<any>();
@@ -15,6 +16,7 @@ export default function AlarmScreen() {
 
   const [currentAgendamentoId, setCurrentAgendamentoId] = useState(initialAgendamentoId);
   const [agendamento, setAgendamento] = useState<any>(null);
+  const [existingRegistroId, setExistingRegistroId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   const { colors, fontScale, highContrast } = useAccessibility();
@@ -26,14 +28,25 @@ export default function AlarmScreen() {
     React.useCallback(() => {
       const fetchAgendamentoDetails = async () => {
         setLoading(true);
+        setExistingRegistroId(null);
         try {
           const response = await api.get(`/api/agendamentos/${currentAgendamentoId}/`);
           setAgendamento(response.data);
           agendamentoRef.current = response.data; 
+
+          try {
+            const registrosResponse = await api.get('/api/registros/');
+            const hoje = registrosResponse.data.find((r: any) =>
+              r.agendamento.id === currentAgendamentoId && isToday(parseISO(r.data_hora_tomada))
+            );
+            setExistingRegistroId(hoje?.id ?? null);
+          } catch {
+            setExistingRegistroId(null);
+          }
         } catch (error: any) {
           
           if (error.response && error.response.status === 404 && agendamentoRef.current) {
-            console.log("Procurando o agendamento recriado pós-edição...");
+            log("Procurando o agendamento recriado pós-edição...");
             try {
               const listaResponse = await api.get('/api/agendamentos/');
               const novaLista = listaResponse.data;
@@ -68,11 +81,20 @@ export default function AlarmScreen() {
 
   const handleRegister = async (tomou: boolean) => {
     try {
-      const response = await api.post('/api/registros/', {
-        agendamento: currentAgendamentoId, 
+      let response;
+      const payload = {
         tomou: tomou,
         data_hora_tomada: new Date().toISOString(),
-      });
+      };
+
+      if (existingRegistroId !== null) {
+        response = await api.patch(`/api/registros/${existingRegistroId}/`, payload);
+      } else {
+        response = await api.post('/api/registros/', {
+          agendamento: currentAgendamentoId,
+          ...payload,
+        });
+      }
 
       Alert.alert("Registrado!", tomou ? "Bom trabalho!" : "Dose registrada como não tomada.");
       
