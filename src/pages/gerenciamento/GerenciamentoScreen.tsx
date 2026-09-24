@@ -7,7 +7,7 @@ import Header from '../../components/Header';
 import LogoAmparo from '../../assets/LogoAmparoPreto.png';
 import BottomNavigationBar from '../../components/BottomNavigationBar';
 import { makeStyles } from './styles'; 
-import { limparAlarmesAntigos } from '../../services/notificacao';
+import { limparAlarmesAntigos, scheduleReminder } from '../../services/notificacao';
 import { getApiErrorMessage } from '../../services/errorUtils';
 import { useAccessibility } from '../../contexts/AccessibilityContext';
 
@@ -114,6 +114,14 @@ export default function GerenciamentoScreen({ navigation }: any) {
     try {
       if (novoAtivo) {
         await api.post(`/api/medicamentos/${medicamento.id}/reativar/`);
+
+        const agendamentosResponse = await api.get('/api/agendamentos/');
+        const agendamentosDoMedicamento = agendamentosResponse.data.filter(
+          (ag: any) => ag.medicamento?.id === medicamento.id
+        );
+        for (const agendamento of agendamentosDoMedicamento) {
+          await scheduleReminder(agendamento);
+        }
       } else {
         await limparAlarmesAntigos(medicamento.nome);
         await api.post(`/api/medicamentos/${medicamento.id}/inativar/`);

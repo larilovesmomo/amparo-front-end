@@ -6,6 +6,15 @@ export const makeStyles = (colors: ColorPalette, fontScale: number) => StyleShee
         backgroundColor: colors.background,
         flex: 1, 
     },
+    headerContainer: {
+        position: 'relative',
+    },
+    downloadButton: {
+        position: 'absolute',
+        right: 16,
+        top: 24,
+        padding: 4,
+    },
     title: {
         color: colors.primary,
         fontSize: 20 * fontScale,
