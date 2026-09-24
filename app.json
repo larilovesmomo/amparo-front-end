@@ -2,7 +2,7 @@
   "expo": {
     "name": "Amparo",
     "slug": "Amparo",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "icon": "./assets/amparoIcon.png",
     "orientation": "portrait",
     "backgroundColor": "#5C9EDC",
