@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import Constants from 'expo-constants';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAccessibility, FontSizeLevel, ColorPalette } from '../../contexts/AccessibilityContext';
 
@@ -72,6 +73,17 @@ export default function SettingsScreen({ navigation }: any) {
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Sair da Conta</Text>
         </TouchableOpacity>
+
+        <Text
+          style={{
+            marginTop: 20,
+            fontSize: 14 * fontScale,
+            color: colors.textSecondary,
+            textAlign: 'center',
+          }}
+        >
+          Versão {Constants.expoConfig?.version}
+        </Text>
       </ScrollView>
       <BottomNavigationBar activeTab="settings" />
     </View>
