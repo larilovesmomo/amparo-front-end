@@ -15,6 +15,7 @@ import {
 import { ptBR } from 'date-fns/locale';
 import api from '../../services/api';
 import { getApiErrorMessage } from '../../services/errorUtils';
+import { sincronizarAlarmes } from '../../services/notificacao';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAccessibility, ColorPalette } from '../../contexts/AccessibilityContext';
 import { RootStackParamList } from '../../../App';
@@ -110,6 +111,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       ]);
       setAgendamentos(agRes.data);
       setRegistros(regRes.data);
+      await sincronizarAlarmes(agRes.data);
     } catch (err) {
       console.error('Erro ao buscar dados:', err);
       setError(getApiErrorMessage(err));

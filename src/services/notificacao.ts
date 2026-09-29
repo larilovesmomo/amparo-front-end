@@ -62,6 +62,31 @@ export const scheduleReminder = async (agendamento: AgendamentoType) => {
   }
 };
 
+export const sincronizarAlarmes = async (agendamentos: AgendamentoType[]) => {
+  try {
+    await limparAlarmesExpirados();
+
+    const agendadas = await Notifications.getAllScheduledNotificationsAsync();
+    const idsNotificados = new Set<number>();
+
+    for (const notificacao of agendadas) {
+      const data = notificacao.content.data;
+      if (!data || data.screen !== 'Alarm' || data.agendamentoId == null) continue;
+      idsNotificados.add(data.agendamentoId as number);
+    }
+
+    for (const agendamento of agendamentos) {
+      if (agendamento.medicamento.is_active === false) continue;
+      if (idsNotificados.has(agendamento.id)) continue;
+
+      await scheduleReminder(agendamento);
+      idsNotificados.add(agendamento.id);
+    }
+  } catch (error) {
+    console.error('Erro ao sincronizar alarmes:', error);
+  }
+};
+
 export const limparAlarmesAntigos = async (nomeMedicamento: string) => {
   try {
     const agendadas = await Notifications.getAllScheduledNotificationsAsync();
