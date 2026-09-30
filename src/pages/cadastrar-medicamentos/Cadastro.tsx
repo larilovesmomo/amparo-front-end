@@ -310,7 +310,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
 
       let response;
       if(isEditing){
-        await limparAlarmesAntigos(initialData.nome);
+        await limparAlarmesAntigos(initialData.id);
         response = await axios.put(`${apiUrl}/api/medicamentos/${initialData.id}/`, payload, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -396,7 +396,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
           style: "destructive",
           onPress: async () => {
             try {
-              await limparAlarmesAntigos(initialData.nome);
+              await limparAlarmesAntigos(initialData.id);
               await api.delete(`/api/medicamentos/${initialData.id}/`);
               navigation.goBack();
             } catch (error) {

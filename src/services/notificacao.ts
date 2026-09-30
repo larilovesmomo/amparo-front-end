@@ -99,16 +99,28 @@ export const sincronizarAlarmes = async (agendamentos: AgendamentoType[]) => {
   }
 };
 
-export const limparAlarmesAntigos = async (nomeMedicamento: string) => {
+const cancelarLembretesPorAgendamento = async (agendamentoIds: number[]) => {
+  const agendamentosAlvo = new Set(agendamentoIds);
+  const agendadas = await Notifications.getAllScheduledNotificationsAsync();
+
+  for (const notif of agendadas) {
+    const data = notif.content.data;
+    if (!data || data.screen !== 'Alarm' || data.agendamentoId == null) continue;
+    if (!agendamentosAlvo.has(data.agendamentoId as number)) continue;
+
+    await Notifications.cancelScheduledNotificationAsync(notif.identifier);
+    log(`[Limpeza] Alarme do agendamento ${data.agendamentoId} apagado com sucesso.`);
+  }
+};
+
+export const limparAlarmesAntigos = async (medicamentoId: number) => {
   try {
-    const agendadas = await Notifications.getAllScheduledNotificationsAsync();
-    
-    for (const notif of agendadas) {
-      if (notif.content.body && notif.content.body.includes(nomeMedicamento)) {
-        await Notifications.cancelScheduledNotificationAsync(notif.identifier);
-        log(`[Limpeza] Alarme ${nomeMedicamento} apagado com sucesso.`);
-      }
-    }
+    const agendamentosResponse = await api.get('/api/agendamentos/');
+    const idsAgendamentos: number[] = agendamentosResponse.data
+      .filter((agendamento: AgendamentoType) => agendamento.medicamento?.id === medicamentoId)
+      .map((agendamento: AgendamentoType) => agendamento.id);
+
+    await cancelarLembretesPorAgendamento(idsAgendamentos);
   } catch (error) {
     console.error("Erro ao limpar alarmes antigos:", error);
   }
@@ -120,7 +132,7 @@ export const inativarMedicamentoComRestauracao = async (medicamentoId: number, n
     (agendamento: AgendamentoType) => agendamento.medicamento?.id === medicamentoId
   );
 
-  await limparAlarmesAntigos(nomeMedicamento);
+  await cancelarLembretesPorAgendamento(agendamentosDoMedicamento.map(agendamento => agendamento.id));
 
   try {
     await api.post(`/api/medicamentos/${medicamentoId}/inativar/`);

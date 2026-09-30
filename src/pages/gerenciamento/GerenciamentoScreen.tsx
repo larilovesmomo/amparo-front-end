@@ -72,7 +72,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
           style: "destructive", 
           onPress: async () => {
             try {
-              await limparAlarmesAntigos(medicamento.nome);
+              await limparAlarmesAntigos(medicamento.id);
               await api.delete(`/api/medicamentos/${medicamento.id}/`);
               setMedicamentos(prev => prev.filter(m => m.id !== medicamento.id));
             } catch (error) {
