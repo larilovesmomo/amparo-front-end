@@ -41,7 +41,7 @@ const AppNavigator = () => {
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
       const data = response.notification.request.content.data;
-      if (data.screen === 'Alarm' && data.agendamentoId) {
+      if (data && data.screen === 'Alarm' && data.agendamentoId) {
         console.log('Ação de alarme anotada:', data.agendamentoId);
         setPendingNotification({ name: 'Alarm', params: { agendamentoId: data.agendamentoId } });
       }

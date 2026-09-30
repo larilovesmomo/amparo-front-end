@@ -12,6 +12,12 @@ import { getApiErrorMessage } from '../../services/errorUtils';
 import { useAccessibility } from '../../contexts/AccessibilityContext';
 
 
+interface AgendamentoResumo {
+  id: number;
+  horario: string;
+  data_fim: string | null;
+}
+
 interface Medicamento {
   id: number;
   nome: string;
@@ -25,6 +31,7 @@ interface Medicamento {
   horario_fim: string | null;
   intervalo: number | null;
   duracao_valor: number | null;
+  agendamentos?: AgendamentoResumo[];
 }
 
 export default function GerenciamentoScreen({ navigation }: any) {
@@ -40,8 +47,32 @@ export default function GerenciamentoScreen({ navigation }: any) {
   const fetchData = async () => {
     try {
       setRefreshing(true);
-      const response = await api.get('/api/medicamentos/?include_inactive=true');
-      setMedicamentos(response.data);
+      const [medicamentosResponse, agendamentosResponse] = await Promise.all([
+        api.get('/api/medicamentos/?include_inactive=true'),
+        api.get('/api/agendamentos/'),
+      ]);
+
+      const agendamentosPorMedicamento = agendamentosResponse.data.reduce(
+        (
+          acc: { [key: number]: AgendamentoResumo[] },
+          ag: AgendamentoResumo & { medicamento?: { id: number } },
+        ) => {
+          const medId = ag.medicamento?.id;
+          if (medId != null) {
+            if (!acc[medId]) acc[medId] = [];
+            acc[medId].push({ id: ag.id, horario: ag.horario, data_fim: ag.data_fim });
+          }
+          return acc;
+        },
+        {} as { [key: number]: AgendamentoResumo[] },
+      );
+
+      setMedicamentos(
+        medicamentosResponse.data.map((medicamento: Medicamento) => ({
+          ...medicamento,
+          agendamentos: agendamentosPorMedicamento[medicamento.id] ?? [],
+        })),
+      );
     } catch (error) {
       console.error("Erro ao carregar tratamentos:", error);
       Alert.alert("Erro", getApiErrorMessage(error));
