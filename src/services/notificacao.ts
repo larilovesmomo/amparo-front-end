@@ -12,6 +12,18 @@ export const scheduleReminder = async (agendamento: AgendamentoType) => {
       return;
     }
 
+    const agendadas = await Notifications.getAllScheduledNotificationsAsync();
+    const jaAgendada = agendadas.some(notificacao => {
+      const data = notificacao.content.data;
+      if (!data || data.screen !== 'Alarm' || data.agendamentoId == null) return false;
+      return data.agendamentoId === agendamento.id;
+    });
+
+    if (jaAgendada) {
+      log(`[Notificação] Alarme do agendamento ${agendamento.id} já está agendado. Lembrete duplicado não criado.`);
+      return;
+    }
+
     const horarioDate = parse(agendamento.horario, 'HH:mm:ss', new Date());
     const hour = horarioDate.getHours();
     const minute = horarioDate.getMinutes();
