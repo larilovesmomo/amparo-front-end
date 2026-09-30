@@ -6,7 +6,7 @@ import { makeStyles } from './style';
 import axios from 'axios'
 import * as SecureStore from 'expo-secure-store'
 import api from '../../services/api';
-import { scheduleReminder, limparAlarmesAntigos } from '../../services/notificacao';
+import { scheduleReminder, limparAlarmesAntigos, inativarMedicamentoComRestauracao } from '../../services/notificacao';
 import { getApiErrorMessage } from '../../services/errorUtils';
 import { AgendamentoType} from '../home/HomeScreen';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -418,8 +418,7 @@ export default function CadastrarMedicamento({ navigation }: CadastroScreenProps
           text: "Inativar",
           onPress: async () => {
             try {
-              await limparAlarmesAntigos(initialData.nome);
-              await api.post(`/api/medicamentos/${initialData.id}/inativar/`);
+              await inativarMedicamentoComRestauracao(initialData.id, initialData.nome);
               navigation.goBack();
             } catch (error) {
               Alert.alert("Erro", getApiErrorMessage(error));
