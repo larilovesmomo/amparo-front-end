@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Switch, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
-import { parseISO, isAfter } from 'date-fns'
+import { parseISO, isAfter, format } from 'date-fns'
 import { useAccessibility } from '../contexts/AccessibilityContext';
 
 type TratamentoCardProps = {
@@ -52,10 +52,19 @@ const TratamentoCard: React.FC<TratamentoCardProps> = ({ medicamento, onEdit, on
             <View style={styles.infoContainer}>
               <Text style={[styles.medicationName, (isFinished || isInactive) && styles.textFinished]}>{medicamento.nome}</Text>
               <Text style={[styles.dosage, (isFinished || isInactive) && styles.textFinished]}>{medicamento.dosagem_valor} {medicamento.dosagem_unidade}</Text>
-              {isInactive ? (
+              {isFinished && (
+                <>
+                  <Text style={styles.statusText}>Tratamento finalizado</Text>
+                  {dataFimString && (
+                    <Text style={styles.statusText}>Encerrado em {format(parseISO(dataFimString), 'dd/MM/yyyy')}</Text>
+                  )}
+                </>
+              )}
+              {isInactive && (
                 <Text style={styles.inactiveText}>Inativo</Text>
-              ) : (
-                <Text style={styles.statusText}>{isFinished ? 'Tratamento finalizado' : 'Em andamento'}</Text>
+              )}
+              {!isFinished && !isInactive && (
+                <Text style={styles.statusText}>Em andamento</Text>
               )}
             </View>
             <View style={styles.toggleContainer}>
@@ -65,7 +74,7 @@ const TratamentoCard: React.FC<TratamentoCardProps> = ({ medicamento, onEdit, on
                 <Switch
                   value={!isInactive}
                   onValueChange={(value) => onToggleActive?.(medicamento, value)}
-                  disabled={isFinished}
+                  disabled={isFinished && !isInactive}
                   trackColor={{ false: colors.border, true: colors.primary }}
                   thumbColor={isInactive ? colors.textSecondary : '#fff'}
                   accessibilityLabel={`Alternar estado do medicamento ${medicamento.nome}`}
