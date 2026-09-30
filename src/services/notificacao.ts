@@ -114,6 +114,25 @@ export const limparAlarmesAntigos = async (nomeMedicamento: string) => {
   }
 };
 
+export const inativarMedicamentoComRestauracao = async (medicamentoId: number, nomeMedicamento: string) => {
+  const agendamentosResponse = await api.get('/api/agendamentos/');
+  const agendamentosDoMedicamento: AgendamentoType[] = agendamentosResponse.data.filter(
+    (agendamento: AgendamentoType) => agendamento.medicamento?.id === medicamentoId
+  );
+
+  await limparAlarmesAntigos(nomeMedicamento);
+
+  try {
+    await api.post(`/api/medicamentos/${medicamentoId}/inativar/`);
+  } catch (error) {
+    for (const agendamento of agendamentosDoMedicamento) {
+      await scheduleReminder(agendamento);
+    }
+    log(`[Notificação] Falha ao inativar ${nomeMedicamento}. Lembretes restaurados.`);
+    throw error;
+  }
+};
+
 export const limparAlarmesExpirados = async () => {
   try {
     const agendamentosResponse = await api.get('/api/agendamentos/');

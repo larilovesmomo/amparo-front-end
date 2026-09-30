@@ -7,7 +7,7 @@ import Header from '../../components/Header';
 import LogoAmparo from '../../assets/LogoAmparoPreto.png';
 import BottomNavigationBar from '../../components/BottomNavigationBar';
 import { makeStyles } from './styles'; 
-import { limparAlarmesAntigos, scheduleReminder } from '../../services/notificacao';
+import { limparAlarmesAntigos, scheduleReminder, inativarMedicamentoComRestauracao } from '../../services/notificacao';
 import { getApiErrorMessage } from '../../services/errorUtils';
 import { useAccessibility } from '../../contexts/AccessibilityContext';
 
@@ -94,8 +94,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
           text: "Inativar", 
           onPress: async () => {
             try {
-              await limparAlarmesAntigos(medicamento.nome);
-              await api.post(`/api/medicamentos/${medicamento.id}/inativar/`);
+              await inativarMedicamentoComRestauracao(medicamento.id, medicamento.nome);
               setMedicamentos(prev => prev.map(m => m.id === medicamento.id ? { ...m, is_active: false } : m));
             } catch (error) {
               Alert.alert("Erro", getApiErrorMessage(error));
@@ -123,8 +122,7 @@ export default function GerenciamentoScreen({ navigation }: any) {
           await scheduleReminder(agendamento);
         }
       } else {
-        await limparAlarmesAntigos(medicamento.nome);
-        await api.post(`/api/medicamentos/${medicamento.id}/inativar/`);
+        await inativarMedicamentoComRestauracao(medicamento.id, medicamento.nome);
       }
     } catch (error) {
       setMedicamentos(prev => prev.map(m => m.id === medicamento.id ? { ...m, is_active: antigoAtivo } : m));
