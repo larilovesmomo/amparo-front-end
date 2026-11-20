@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Switch, ActivityIndicator } from 'react-native';
-import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
+import { View, Text, StyleSheet, TouchableOpacity, Switch, ActivityIndicator } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { parseISO, isAfter, format } from 'date-fns'
 import { useAccessibility } from '../contexts/AccessibilityContext';
@@ -21,15 +22,10 @@ const TratamentoCard: React.FC<TratamentoCardProps> = ({ medicamento, onEdit, on
   const isFinished = dataFimString ? isAfter(new Date(), parseISO(dataFimString)) : false;
   const isInactive = medicamento.is_active === false;
 
-  const renderRightActions = (progress: any, dragX: any) => {
+  const renderRightActions = () => {
     if (isInactive) return null;
-    const trans = dragX.interpolate({
-      inputRange: [-150, 0],
-      outputRange: [0, 150],
-      extrapolate: 'clamp',
-    });
     return (
-      <Animated.View style={[styles.actionsContainer, { transform: [{ translateX: trans }] }]}>
+      <View style={styles.actionsContainer}>
         <TouchableOpacity style={[styles.actionButton, styles.editButton]} onPress={onEdit}>
           <MaterialCommunityIcons name="pencil" size={24} color="#fff" />
         </TouchableOpacity>
@@ -39,7 +35,7 @@ const TratamentoCard: React.FC<TratamentoCardProps> = ({ medicamento, onEdit, on
         <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={onDelete}>
           <MaterialCommunityIcons name="trash-can-outline" size={24} color="#fff" />
         </TouchableOpacity>
-      </Animated.View>
+      </View>
     );
   };
 
